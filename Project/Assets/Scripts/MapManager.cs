@@ -13,7 +13,7 @@ public class MapManager : MonoBehaviour {
     public int numCave;             // # of caves on this map
     public int numMarket;           // # of markets in the town
     public TileManager tileManager;
-    private TileManager[][] map = new TileManager[11][];
+    public TileManager[][] map = new TileManager[11][];
 
     // Prefab objects
     public GameObject caveInExit, caveOutExit, forestExit, townExit, marketExit;
@@ -139,7 +139,6 @@ public class MapManager : MonoBehaviour {
     // Draws the tile at the given location to the screen
     public void Draw(int x, int y) {
         map[x][y].Draw();
-        print("On tile (" + x + ", " + y + ")");
     }
 
     // Removes the tile at the location from the screen

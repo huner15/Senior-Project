@@ -50,11 +50,10 @@ public class TileManager : MonoBehaviour {
     public List<GameObject> npcs = new List<GameObject>();          // prefabs for the npcs
     public List<Vector3> npcLocations = new List<Vector3>();        // location of npcs
 
-
     // Finds the index of the tile with given coordinates in the grid
-    int findTile(float x, float y) {
-        for (int i = 0; i < gridPositions.Count; i++) {
-            if (gridPositions[i].x == x && gridPositions[i].y == y)
+    int findTile(List<Vector3> grid, float x, float y) {
+        for (int i = 0; i < grid.Count; i++) {
+            if (grid[i].x == x && grid[i].y == y)
                 return i;
         }
         return -1;
@@ -62,7 +61,7 @@ public class TileManager : MonoBehaviour {
 
     // Removes the tile from the list of possible grid locations
     void removeTile(float x, float y) {
-        int find = findTile(x, y);
+        int find = findTile(gridPositions, x, y);
         if (find != -1)
             gridPositions.RemoveAt(find);
     }
@@ -129,8 +128,8 @@ public class TileManager : MonoBehaviour {
 
         // Object goes off the edge of the tile grid
         while (pos.x - sizeX + 1 < 1 || pos.x + sizeX - 1 > columns || pos.y - sizeY + 1 < 1 || pos.y + sizeY - 1 > rows ||
-               findTile(pos.x - sizeX + 1, pos.y) == -1 || findTile(pos.x + sizeX - 1, pos.y) == -1 ||
-               findTile(pos.x, pos.y + sizeY - 1) == -1 || findTile(pos.x, pos.y - sizeY + 1) == -1) {
+               findTile(gridPositions, pos.x - sizeX + 1, pos.y) == -1 || findTile(gridPositions, pos.x + sizeX - 1, pos.y) == -1 ||
+               findTile(gridPositions, pos.x, pos.y + sizeY - 1) == -1 || findTile(gridPositions, pos.x, pos.y - sizeY + 1) == -1) {
             index = Random.Range(0, gridPositions.Count);
             pos = gridPositions[index];
         }
@@ -152,7 +151,7 @@ public class TileManager : MonoBehaviour {
             // Where and what to place
             Vector3 randomPosition = RandomPosition(sizeX, sizeY);
             GameObject tileChoice = tileArray[Random.Range(0, tileArray.Length)];
-            randomPosition.z = randomPosition.y;
+            randomPosition.z = 1/randomPosition.y;
 
             // Add the object
             GameObject instance = Instantiate(tileChoice, randomPosition, Quaternion.identity) as GameObject;
@@ -186,7 +185,7 @@ public class TileManager : MonoBehaviour {
             wallCount = new Count(0, 0);
             npcCount = new Count(10, 30);
             bSizeX = 2;
-            bSizeY = 1;
+            bSizeY = 2;
         }
         // Tile is a town; has houses and people
         else if (tileType.Equals("Town")) {
@@ -256,5 +255,32 @@ public class TileManager : MonoBehaviour {
         // Undraw the people
         for (int i = 0; i < npcs.Count; i++)
             npcs[i].SetActive(false);
+    }
+
+    // Finds and returns a random empty location on this tile, if there is one
+    public Vector3 EmptyLocation() {
+        Vector3 emptyLoc;
+
+        if (gridPositions.Count == 0)
+            emptyLoc = new Vector3(-1, -1, -1);
+        else {
+            int index = Random.Range(0, gridPositions.Count);
+            emptyLoc = gridPositions[index];
+            gridPositions.RemoveAt(index);
+        }
+        return emptyLoc;
+    }
+
+    // Is there an impassable object at this location?
+    public Boolean ObjectAt(int x, int y) {
+        // There's a building here
+        if (findTile(buildingLocations, x, y) != -1)
+            return true;
+        // There's a wall here
+        if (findTile(wallLocations, x, y) != -1)
+            return true;
+
+        // There was nothing there
+        return false;
     }
 }

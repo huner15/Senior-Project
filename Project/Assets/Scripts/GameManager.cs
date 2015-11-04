@@ -6,9 +6,11 @@ using Random = UnityEngine.Random;
 public class GameManager : MonoBehaviour {
 
     public static GameManager instance = null;
+    public GameObject player;
     public GameObject map;
-    public MapManager mapManager;
-    public int tileX, tileY;
+
+    private MapManager mapManager;
+    private Player playerManager;
 
 	// Use this for initialization
 	void Awake () {
@@ -23,50 +25,33 @@ public class GameManager : MonoBehaviour {
         InitGame();
 	}
 
-    // 
     void Update() {
-        // Move left
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            if (tileX > 1) {
-                mapManager.Undraw(tileX, tileY);
-                mapManager.Draw(--tileX, tileY);
-            }
-        }
-        // Move right
-        else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            if (tileX < 10) {
-                mapManager.Undraw(tileX, tileY);
-                mapManager.Draw(++tileX, tileY);
-            }
-        }
-        // Move up
-        else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            if (tileY < 10) {
-                mapManager.Undraw(tileX, tileY);
-                mapManager.Draw(tileX, ++tileY);
-            }
-        }
-        // Move down
-        else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-            if (tileY > 1) {
-                mapManager.Undraw(tileX, tileY);
-                mapManager.Draw(tileX, --tileY);
-            }
-        }
     }
 
     // Initializes the game
     void InitGame() {
         // Create the map
-        Instantiate(map);
+        map = Instantiate(map) as GameObject;
         mapManager = map.GetComponent<MapManager>();
         mapManager.SetupScene();
 
         // Where are we on the map?
-        tileX = Random.Range(0, 10);
-        tileY = Random.Range(0, 10);
+        int mapX = Random.Range(1, 11);
+        int mapY = Random.Range(1, 11);
+        Vector3 tile = mapManager.map[mapX][mapY].EmptyLocation();
+        while (tile.x == -1)
+            tile = mapManager.map[mapX][mapY].EmptyLocation();
+
+        print("map: " + mapX + ", " + mapY);
+        print("tile: " + tile.x + ", " + tile.y);
+
+        // Create the player
+        player = Instantiate(player, new Vector3(tile.x, tile.y, 10f), Quaternion.identity) as GameObject;
+        playerManager = player.GetComponent<Player>();
+        playerManager.PlaceAt(mapX, mapY, (int)tile.x, (int)tile.y);
+        playerManager.map = mapManager;
 
         // Draw our area on the map
-        mapManager.Draw(tileX, tileY);
+        mapManager.Draw(playerManager.mapX, playerManager.mapY);
     }
 }

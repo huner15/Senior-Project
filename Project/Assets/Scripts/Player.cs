@@ -1,59 +1,41 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Random = UnityEngine.Random;
 
 public class Player : MovingObject {
-
-    public int mapX, mapY;      // player's location on the map
-    public int tileX, tileY;    // player's location on the tile
 
 	// Use this for initialization
 	void Start () {
         base.Start();
-	}
+    }
 	
 	// Update is called once per frame
-	private void Update () {
+    void Update () {
         // Move left
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+            AttemptMove<Player>(-1, 0);
         // Move right
-        else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+            AttemptMove<Player>(1, 0);
         // Move up
-        else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-        }
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+            AttemptMove<Player>(0, 1);
         // Move down
-        else if (Input.GetKeyDown(KeyCode.DownArrow)) {
-        }
-
-        int horizontal = 0;
-        int vertical = 0;
-
-        horizontal = (int) (Input.GetAxisRaw("Horizontal"));
-        vertical = (int) (Input.GetAxisRaw("Vertical"));
-
-        // Check if moving horizontally, if so set vertical to zero
-        if (horizontal != 0)
-            vertical = 0;
-
-        // Check if we have a non-zero value
-        if (horizontal != 0 || vertical != 0) {
-            // Did we hit a building?
-            AttemptMove<Player>(horizontal, vertical);
-        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow))
+            AttemptMove<Player>(0, -1);
 	}
 
     protected override void AttemptMove<T>(int xDir, int yDir) {
+        // Reference to the previous map we were on
+        int oldX = mapX;
+        int oldY = mapY;
+
+        // Try to move in the direction of the input
         base.AttemptMove<T>(xDir, yDir);
 
-        // Allows us to reference the result of the Linecast done in Move
-        RaycastHit2D hit;
-
-        // If Move returns true, the player was able to move into an empty space
-        if (Move(xDir, yDir, out hit))
-        {
-            
-        }
+        // Draw the new tile we're on
+        map.Undraw(oldX, oldY);
+        map.Draw(mapX, mapY);
     }
 
     protected override void OnCantMove<T>(T component) {
@@ -64,22 +46,11 @@ public class Player : MovingObject {
     private void OnTriggerEnter2D(Collider2D other) {
         // We collided with an npc
         if (other.tag == "NPC") {
-
+            print("Walked into an NPC");
         }
         // We collided with a building
-        else if (other.tag == "Building")
-        {
-
+        else if (other.tag == "Building") {
+            print("Hit a building");
         }
-        // We collided with an exit
-        else if (other.tag == "Exit")
-        {
-            Invoke("Exit", 1f);
-        }
-    }
-
-    // Load the last scene loaded
-    private void Exit() {
-        Application.LoadLevel(Application.loadedLevel);
     }
 }
