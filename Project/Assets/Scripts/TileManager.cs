@@ -86,8 +86,8 @@ public class TileManager : MonoBehaviour {
     void InitialiseList() {
         gridPositions.Clear();
 
-        for (int x = 1; x <= columns; x++) {
-            for (int y = 1; y <= rows; y++)
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++)
                 gridPositions.Add(new Vector3(x, y, 0f));
         }
     }
@@ -96,17 +96,13 @@ public class TileManager : MonoBehaviour {
     void BoardSetup() {
         boardHolder = new GameObject("Board").transform;
 
-        for (int x = 1; x <= columns; x++) {
-            for (int y = 1; y <= rows; y++) {
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++) {
                 // Create a random floor tile
                 GameObject toInstantiate = floorTiles[Random.Range(0, floorTiles.Length)];
 
-                // Create a floor tile that can go to the next map
-                //if (x == 1 || x == columns || y == 1 || y == rows)
-                //    toInstantiate = exitTile;
-
                 // Edge of the map; create an impassable wall
-                if ((x == 1 && tileCol == 1) || (x == columns && tileCol == columns) || (y == 1 && tileRow == 1) || (y == rows && tileRow == rows)) {
+                if ((x == 0 && tileCol == 0) || (x == (columns - 1) && tileCol == (columns - 1)) || (y == 0 && tileRow == 0) || (y == (rows - 1) && tileRow == (rows - 1))) {
                     toInstantiate = outerWallTiles[Random.Range(0, outerWallTiles.Length)];
                     removeTile(x, y);
                 }
@@ -127,7 +123,7 @@ public class TileManager : MonoBehaviour {
         Vector3 pos = gridPositions[index];
 
         // Object goes off the edge of the tile grid
-        while (pos.x - sizeX + 1 < 1 || pos.x + sizeX - 1 > columns || pos.y - sizeY + 1 < 1 || pos.y + sizeY - 1 > rows ||
+        while (pos.x - sizeX + 1 < 0 || pos.x + sizeX - 1 > (columns - 1) || pos.y - sizeY + 1 < 0 || pos.y + sizeY - 1 > (rows - 1) ||
                findTile(gridPositions, pos.x - sizeX + 1, pos.y) == -1 || findTile(gridPositions, pos.x + sizeX - 1, pos.y) == -1 ||
                findTile(gridPositions, pos.x, pos.y + sizeY - 1) == -1 || findTile(gridPositions, pos.x, pos.y - sizeY + 1) == -1) {
             index = Random.Range(0, gridPositions.Count);
@@ -151,7 +147,7 @@ public class TileManager : MonoBehaviour {
             // Where and what to place
             Vector3 randomPosition = RandomPosition(sizeX, sizeY);
             GameObject tileChoice = tileArray[Random.Range(0, tileArray.Length)];
-            randomPosition.z = 1/randomPosition.y;
+            randomPosition.z = 10 - randomPosition.y;
 
             // Add the object
             GameObject instance = Instantiate(tileChoice, randomPosition, Quaternion.identity) as GameObject;
@@ -181,25 +177,25 @@ public class TileManager : MonoBehaviour {
 
         // Tile is a market; has lots of stalls and people
         if (tileType.Equals("Market")) {
-            buildingCount = new Count(3, 7);
+            buildingCount = new Count(2, 3);
             wallCount = new Count(0, 0);
-            npcCount = new Count(10, 30);
-            bSizeX = 2;
+            npcCount = new Count(5, 7);
+            bSizeX = 3;
             bSizeY = 2;
         }
         // Tile is a town; has houses and people
         else if (tileType.Equals("Town")) {
             buildingCount = new Count(1, 3);
-            wallCount = new Count(0, 10);
-            npcCount = new Count(5, 10);
-            bSizeX = 2;
+            wallCount = new Count(0, 5);
+            npcCount = new Count(3, 5);
+            bSizeX = 3;
             bSizeY = 2;
         }
         // Tile is a forest; has trees and bushes
         else if (tileType.Equals("Forest")) {
             buildingCount = new Count(0, 0);
             wallCount = new Count(10, 30);
-            npcCount = new Count(0, 1);
+            npcCount = new Count(0, 0);
             bSizeX = 1;
             bSizeY = 1;
         }
@@ -207,9 +203,9 @@ public class TileManager : MonoBehaviour {
         else if (tileType.Equals("Cave")) {
             buildingCount = new Count(1, 1);
             wallCount = new Count(5, 10);
-            npcCount = new Count(0, 1);
+            npcCount = new Count(0, 0);
             bSizeX = 2;
-            bSizeY = 1;
+            bSizeY = 2;
         }
         
         // Resets the list of grid positions

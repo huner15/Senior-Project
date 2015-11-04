@@ -13,7 +13,7 @@ public class MapManager : MonoBehaviour {
     public int numCave;             // # of caves on this map
     public int numMarket;           // # of markets in the town
     public TileManager tileManager;
-    public TileManager[][] map = new TileManager[11][];
+    public TileManager[][] map = new TileManager[10][];
 
     // Prefab objects
     public GameObject caveInExit, caveOutExit, forestExit, townExit, marketExit;
@@ -22,11 +22,16 @@ public class MapManager : MonoBehaviour {
     public GameObject[] caveInWalls, caveOutWalls, forestWalls, townWalls, marketWalls;
     public GameObject[] caveInFloors, caveOutFloors, forestFloors, townFloors, marketFloors;
     public GameObject[] caveInBuildings, caveOutBuildings, forestBuildings, townBuildings, marketBuildings;
-    public GameObject[] npcs;
+    public GameObject[] npcTiles;
 
     // Grid information
     private Transform mapHolder;                                // Reference to the transform of the map
     private List<Vector3> gridPositions = new List<Vector3>();  // Possible locations to place tiles
+
+    public List<GameObject> buildings = new List<GameObject>();     // List of all buildings on all tiles (TODO: CHANGE THIS TO A SCRIPT CALLED BUILDING)
+    public List<Vector3> buildingLocations = new List<Vector3>();   // List of all buildings locations (xy where x = map, y = tile)
+    public List<GameObject> npcs = new List<GameObject>();          // List of all NPCs on all tiles (TODO: CHANGE THIS TO A SCRIPT CALLED NPC)
+    public List<Vector3> npcLocations = new List<Vector3>();        // List of all NPC locations
 
 
     // Finds the index of the tile with given coordinates in the grid
@@ -49,10 +54,10 @@ public class MapManager : MonoBehaviour {
     void InitialiseList() {
         gridPositions.Clear();
 
-        for (int x = 1; x <= columns; x++) {
-            map[x] = new TileManager[11];
-            for (int y = 1; y <= rows; y++) {
-                map[x][y] = (TileManager)Instantiate(tileManager, new Vector3(5, 5, 0), Quaternion.identity);
+        for (int x = 0; x < columns; x++) {
+            map[x] = new TileManager[10];
+            for (int y = 0; y < rows; y++) {
+                map[x][y] = (TileManager)Instantiate(tileManager);
                 gridPositions.Add(new Vector3(x, y, 0f));
             }
         }
@@ -61,8 +66,8 @@ public class MapManager : MonoBehaviour {
     // Determines where the town will be located
     List<Vector3> getTown() {
         List<Vector3> town = new List<Vector3>();
-        int townX = Random.Range(4, 8);
-        int townY = Random.Range(4, 8);
+        int townX = Random.Range(3, 7);
+        int townY = Random.Range(3, 7);
 
         // Locations that will be the town
         for (int x = townX - 3; x <= townX + 3; x++) {
@@ -100,27 +105,47 @@ public class MapManager : MonoBehaviour {
         }
 
         // Layout the map and setup each map tile
-        for (int x = 1; x <= columns; x++) {
-            for (int y = 1; y <= rows; y++) {
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++) {
                 // Market
                 if (findTile(markets, x, y) != -1) {
-                    map[x][y].SetupSprites(marketExit, marketRoad, marketOuterWall, marketFloors, marketBuildings, marketWalls, npcs);
+                    map[x][y].SetupSprites(marketExit, marketRoad, marketOuterWall, marketFloors, marketBuildings, marketWalls, npcTiles);
                     map[x][y].SetupScene(y, x, "Market");
                 }
                 // Town
                 else if (findTile(town, x, y) != -1) {
-                    map[x][y].SetupSprites(townExit, townRoad, townOuterWall, townFloors, townBuildings, townWalls, npcs);
+                    map[x][y].SetupSprites(townExit, townRoad, townOuterWall, townFloors, townBuildings, townWalls, npcTiles);
                     map[x][y].SetupScene(y, x, "Town");
                 }
                 // Cave Exterior
                 else if (findTile(caves, x, y) != -1) {
-                    map[x][y].SetupSprites(caveOutExit, caveOutRoad, caveOutOuterWall, caveOutFloors, caveOutBuildings, caveOutWalls, npcs);
+                    map[x][y].SetupSprites(caveOutExit, caveOutRoad, caveOutOuterWall, caveOutFloors, caveOutBuildings, caveOutWalls, npcTiles);
                     map[x][y].SetupScene(y, x, "Cave");
                 }
                 // Forest
                 else {
-                    map[x][y].SetupSprites(forestExit, forestRoad, forestOuterWall, forestFloors, forestBuildings, forestWalls, npcs);
+                    map[x][y].SetupSprites(forestExit, forestRoad, forestOuterWall, forestFloors, forestBuildings, forestWalls, npcTiles);
                     map[x][y].SetupScene(y, x, "Forest");
+                }
+            }
+        }
+    }
+
+    // Finds and stores all references to buildings and npcs on all tiles
+    void GetReferences() {
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++) {
+                // Find all the buildings
+                for (int i = 0; i < map[x][y].buildings.Count; i++) {
+                    Vector3 loc = map[x][y].buildingLocations[i];
+                    buildingLocations.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
+                    buildings.Add(map[x][y].buildings[i]);
+                }
+                // Find all the NPCs
+                for (int i = 0; i < map[x][y].npcs.Count; i++) {
+                    Vector3 loc = map[x][y].npcLocations[i];
+                    npcLocations.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
+                    npcs.Add(map[x][y].npcs[i]);
                 }
             }
         }
@@ -134,6 +159,7 @@ public class MapManager : MonoBehaviour {
 
         InitialiseList();
         MapSetup();
+        GetReferences();
     }
 
     // Draws the tile at the given location to the screen

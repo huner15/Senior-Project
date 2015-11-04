@@ -3,7 +3,8 @@ using System.Collections;
 
 //The abstract keyword enables you to create classes and class members that are incomplete and must be implemented in a derived class.
 public abstract class MovingObject : Object {
-    public float moveTime = 0.1f;           //Time it will take object to move, in seconds.
+    public int moves = 10;
+    public float moveTime = 0.1f;           //Frames it will take object to move
     public LayerMask blockingLayer;         //Layer on which collision will be checked.
 
     private BoxCollider2D boxCollider;      //The BoxCollider2D component attached to this object.
@@ -37,46 +38,46 @@ public abstract class MovingObject : Object {
         //Check if anything was hit
         if (hit.transform == null) {
             // Move to the tile to the left
-            if (tileX == 1 && xDir == -1) {
+            if (tileX == 0 && xDir == -1) {
                 // There's an object on the other side blocking movement
-                if (map.map[mapX - 1][mapY].ObjectAt(10, tileY))
+                if (map.map[mapX - 1][mapY].ObjectAt(9, tileY))
                     return false;
                 // Move onto the tile next to us
                 else {
-                    tileX = 10;
+                    tileX = 9;
                     mapX -= 1;
                 }
             }
             // Move to the tile to the right
-            else if (tileX == 10 && xDir == 1) {
+            else if (tileX == 9 && xDir == 1) {
                 // There's an object on the other side blocking movement
-                if (map.map[mapX + 1][mapY].ObjectAt(1, tileY))
+                if (map.map[mapX + 1][mapY].ObjectAt(0, tileY))
                     return false;
                 // Move onto the tile next to us
                 else {
-                    tileX = 1;
+                    tileX = 0;
                     mapX += 1;
                 }
             }
             // Move to the tile below
-            else if (tileY == 1 && yDir == -1) {
+            else if (tileY == 0 && yDir == -1) {
                 // There's an object on the other side blocking movement
-                if (map.map[mapX][mapY - 1].ObjectAt(tileX, 10))
+                if (map.map[mapX][mapY - 1].ObjectAt(tileX, 9))
                     return false;
                 // Move onto the tile next to us
                 else {
-                    tileY = 10;
+                    tileY = 9;
                     mapY -= 1;
                 }
             }
             // Move to the tile above
-            else if (tileY == 10 && yDir == 1) {
+            else if (tileY == 9 && yDir == 1) {
                 // There's an object on the other side blocking movement
-                if (map.map[mapX][mapY + 1].ObjectAt(tileX, 1))
+                if (map.map[mapX][mapY + 1].ObjectAt(tileX, 0))
                     return false;
                 // Move onto the tile next to us
                 else {
-                    tileY = 1;
+                    tileY = 0;
                     mapY += 1;
                 }
             }
@@ -85,6 +86,7 @@ public abstract class MovingObject : Object {
                 tileX += xDir;
                 tileY += yDir;
             }
+
             transform.position = new Vector3(tileX, tileY, 10 - tileY);
 
             //Return true to say that Move was successful
@@ -94,7 +96,6 @@ public abstract class MovingObject : Object {
         //If something was hit, return false, Move was unsuccesful.
         return false;
     }
-
 
     //Co-routine for moving units from one space to next, takes a parameter end to specify where to move to.
     protected IEnumerator SmoothMovement(Vector3 end) {

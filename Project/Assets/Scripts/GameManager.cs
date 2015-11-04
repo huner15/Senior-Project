@@ -25,25 +25,22 @@ public class GameManager : MonoBehaviour {
         InitGame();
 	}
 
-    void Update() {
-    }
-
     // Initializes the game
     void InitGame() {
         // Create the map
-        map = Instantiate(map) as GameObject;
+        map = Instantiate(map, new Vector3(5.5f, 5.5f, 0), Quaternion.identity) as GameObject;
         mapManager = map.GetComponent<MapManager>();
         mapManager.SetupScene();
 
         // Where are we on the map?
-        int mapX = Random.Range(1, 11);
-        int mapY = Random.Range(1, 11);
+        int mapX = Random.Range(0, 10);
+        int mapY = Random.Range(0, 10);
         Vector3 tile = mapManager.map[mapX][mapY].EmptyLocation();
         while (tile.x == -1)
             tile = mapManager.map[mapX][mapY].EmptyLocation();
 
-        print("map: " + mapX + ", " + mapY);
-        print("tile: " + tile.x + ", " + tile.y);
+        print("map " + mapX + ", " + mapY);
+        print("tile " + tile.x + ", " + tile.y);
 
         // Create the player
         player = Instantiate(player, new Vector3(tile.x, tile.y, 10f), Quaternion.identity) as GameObject;

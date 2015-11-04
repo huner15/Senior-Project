@@ -33,6 +33,9 @@ public class Player : MovingObject {
         // Try to move in the direction of the input
         base.AttemptMove<T>(xDir, yDir);
 
+        print("map " + mapX + ", " + mapY);
+        print("tile " + tileX + ", " + tileY);
+
         // Draw the new tile we're on
         map.Undraw(oldX, oldY);
         map.Draw(mapX, mapY);
