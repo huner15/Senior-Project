@@ -10,8 +10,27 @@ public class GameManager : MonoBehaviour {
     private MapManager mapManager;
     private Player playerManager;
 
-	// Use this for initialization
-	void Awake () {
+    static System.IO.StreamWriter writer;
+
+    public static void logger(String str)
+    {
+        if (writer == null)
+        {
+            if (!System.IO.File.Exists("log.txt"))
+            {
+                System.IO.File.Create("log.txt");
+            }
+
+            writer = new System.IO.StreamWriter(System.IO.File.OpenWrite("log.txt"));
+        }
+        print(str);
+        writer.WriteLine(str);
+        writer.Flush();
+
+    }
+
+    // Use this for initialization
+    void Awake () {
         // Check if GameManager instance already exists
         if (instance == null)
             instance = this;

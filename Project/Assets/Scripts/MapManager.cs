@@ -8,7 +8,7 @@ public class MapManager : MonoBehaviour {
     private int columns = 10;       // # of columns in a tile
     private int rows = 10;          // # of rows in a tile
     private int townSize = 7;       // size of the town
-    
+    private int numActiveNpcs = 10;
     // Map information
     private int numCave;            // # of caves on this map
     private int numMarket;          // # of markets in the town
@@ -30,6 +30,8 @@ public class MapManager : MonoBehaviour {
     public List<GameObject> npcs = new List<GameObject>();          // List of all NPCs on all tiles
     public List<Vector3> npcLocations = new List<Vector3>();        // List of all NPC locations
 
+    public GameObject[] activeNPCs;
+    public GameObject ActiveNPCBase;
 
     // Instantiates all of the tiles on the map
     private void initMap() {
@@ -112,6 +114,17 @@ public class MapManager : MonoBehaviour {
                 }
             }
         }
+
+        activeNPCs = new GameObject[numActiveNpcs];
+        for (int x = 0; x < numActiveNpcs; x++)
+        {
+            activeNPCs[x] = Instantiate(ActiveNPCBase) as GameObject;
+            NPC character = activeNPCs[x].GetComponent<NPC>();
+            Vector3 home = town[Random.Range(0, town.Count)];
+            Vector3 work = town[Random.Range(0, town.Count)];
+            character.setUp(home, work, "" + x);
+        }
+
     }
 
     // Finds and stores all references to buildings and npcs on all tiles

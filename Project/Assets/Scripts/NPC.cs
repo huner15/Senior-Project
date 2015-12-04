@@ -2,8 +2,23 @@
 using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
+using System;
 
 public class NPC : MovingObject {
+
+
+    private Vector3 homeTile, workTile;
+    private float timeloc;
+    private float time;
+    int timeOfDayLength = 1; //in minutes
+    String ID;
+    enum timeOfDay
+    {
+        morning, evening, night
+    }
+    timeOfDay currentTime;
+
+
     // Sprite representing this NPC
     private npcSprite sprite;
 
@@ -30,6 +45,43 @@ public class NPC : MovingObject {
         states.Add(default_states[mood]);
         sprite.setState(states[0]);
     }
+
+    // Update is called once per frame
+    void Update()
+    {
+        //print("time " + (time - Time.time));
+        if (currentTime == timeOfDay.morning && Time.time - timeloc > 10)
+        {
+            goTowardsWork();
+            timeloc = Time.time;
+        }
+        if (currentTime == timeOfDay.evening && Time.time - timeloc > 10)
+        {
+            goTowardsHome();
+            timeloc = Time.time;
+        }
+        if (Time.time - time > timeOfDayLength * 60)
+        {
+
+            time = Time.time;
+            if (currentTime == timeOfDay.morning)
+            {
+                currentTime = timeOfDay.evening;
+            }
+            else if (currentTime == timeOfDay.evening)
+            {
+                currentTime = timeOfDay.night;
+            }
+            else
+            {
+                currentTime = timeOfDay.morning;
+            }
+
+
+        }
+    }
+
+
 
     // Decides what the NPC's initial personality will be
     private void initPersonality() {
@@ -69,7 +121,13 @@ public class NPC : MovingObject {
 
 
     // Use this for initialization
-    void Start() {
+    void Start()
+    {
+        time = Time.time;
+        timeloc = time;
+        currentTime = timeOfDay.morning;
+        mapX = (int)homeTile.x;
+        mapY = (int)homeTile.y;
         base.Start();
     }
 
@@ -85,4 +143,44 @@ public class NPC : MovingObject {
 
     protected override void OnCantMove<T>(T component) {
     }
+
+    public void setUp(Vector3 homeTile, Vector3 workTile, string ID)
+    {
+        this.homeTile = homeTile;
+        this.workTile = workTile;
+        this.ID = ID;
+    }
+
+    private void goTowardsHome()
+    {
+        //throw new NotImplementedException();
+        int dx = (int)homeTile.x - mapX;
+        int dy = (int)homeTile.y - mapY;
+        mapX += dx;
+        mapY += dy;
+        if (dx != 0 || dy != 0)
+            GameManager.logger(ID + "Entered Tile " + mapX + " " + mapY + " While Going Home at " + Time.time + "\n");
+        // AttemptMove<NPC>(dx, dy);
+    }
+
+    private void goTowardsWork()
+    {
+        //throw new NotImplementedException();
+        int dx = (int)workTile.x - mapX;
+        int dy = (int)workTile.y - mapY;
+        if (dx != 0)
+            dx = dx / (Math.Abs(dx));
+        if (dy != 0)
+            dy = dy / (Math.Abs(dy));
+        mapX += dx;
+        mapY += dy;
+        if (dx != 0 || dy != 0)
+            GameManager.logger(ID + "Entered Tile " + mapX + " " + mapY + " While Going To Workat " + Time.time + "\n");
+        //AttemptMove<NPC>(dx, dy);
+    }
+
+   
+
+
+
 }
