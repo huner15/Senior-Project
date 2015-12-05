@@ -63,8 +63,8 @@ public class Player : MovingObject {
         }
         // We collided with an npc
         else if (other.tag == "NPC") {
-            //print("Walked into an NPC");
-            //touchingNPC = true;
+            print("Walked into an NPC");
+            touchingNPC = true;
         }
     }
 }

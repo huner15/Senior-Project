@@ -191,6 +191,7 @@ public class TileManager : MonoBehaviour {
             instance.transform.SetParent(boardHolder);
             instance.GetComponent<NPC>().init();
             instance.GetComponent<NPC>().PlaceAt(tileCol, tileRow, (int)randomPosition.x, (int)randomPosition.y, (int)randomPosition.z);
+            instance.SetActive(false);
             npcs.Add(instance);
             npcLocations.Add(randomPosition);
         }
@@ -277,6 +278,7 @@ public class TileManager : MonoBehaviour {
             buildings[i].SetActive(true);
         // Draw the people
         for (int i = 0; i < npcs.Count; i++) {
+            npcs[i].SetActive(true);
             npcs[i].GetComponent<NPC>().draw();
         }
     }
@@ -294,6 +296,7 @@ public class TileManager : MonoBehaviour {
             buildings[i].SetActive(false);
         // Undraw the people
         for (int i = 0; i < npcs.Count; i++) {
+            npcs[i].SetActive(false);
             npcs[i].GetComponent<NPC>().undraw();
         }
     }

@@ -4,8 +4,19 @@ using System.Collections.Generic;
 using Random = UnityEngine.Random;
 using System;
 
-public class NPC : MovingObject {
+public class NPC : MovingObject
+{
+    // Sprite representing this NPC
+    private npcSprite sprite;
 
+    // States this npc currently has
+    private string name;
+    private string personality;
+    private List<string> states = new List<string>();
+
+    // Places this npc goes
+    private Building home;
+    private Building work;
 
     private Vector3 homeTile, workTile;
     private float timeloc;
@@ -19,31 +30,16 @@ public class NPC : MovingObject {
     timeOfDay currentTime;
 
 
-    // Sprite representing this NPC
-    private npcSprite sprite;
 
-    // States this npc currently has
-    private string name;
-    private string personality;
-    private List<string> states = new List<string>();
-
-    // Places this npc goes
-    private Building home;
-    private Building work;
-
-
-    // Decides what the NPC's initial state will be
-    private void initState() {
-        int mood = 0;
-        string[] default_states = { "normal", "happy", "sad", "angry" };
-
-        // 25% chance to be something other than neutral state on default
-        if (Random.Range(0, 4) == 0)
-            mood = Random.Range(0, 4);
-
-        // update sprite to match state
-        states.Add(default_states[mood]);
-        sprite.setState(states[0]);
+    // Use this for initialization
+    void Start()
+    {
+        time = Time.time;
+        timeloc = time;
+        currentTime = timeOfDay.morning;
+        mapX = (int)homeTile.x;
+        mapY = (int)homeTile.y;
+        base.Start();
     }
 
     // Update is called once per frame
@@ -62,7 +58,6 @@ public class NPC : MovingObject {
         }
         if (Time.time - time > timeOfDayLength * 60)
         {
-
             time = Time.time;
             if (currentTime == timeOfDay.morning)
             {
@@ -76,27 +71,12 @@ public class NPC : MovingObject {
             {
                 currentTime = timeOfDay.morning;
             }
-
-
         }
     }
 
-
-
-    // Decides what the NPC's initial personality will be
-    private void initPersonality() {
-        // Initiate the personality
-        int persona = Random.Range(0, 10);
-        string[] personalities = { "helpful", "aggressive", "outgoing", "alcoholic", "greedy", "shy", "brave", "amoral", "lazy", "psychotic" };
-
-        // update sprite to match personality
-        personality = personalities[persona];
-        sprite.setState(personality);
-    }
-
-
     // Create the initial NPC
-    public void init() {
+    public void init()
+    {
         // Create a random sprite and initialize it
         sprite = GetComponent<npcSprite>();
         sprite.init();
@@ -109,41 +89,6 @@ public class NPC : MovingObject {
         sprite.undraw();
     }
 
-    // Draws the NPC to the screen
-    public void draw() {
-        sprite.draw();
-    }
-
-    // Removes the npc from the screen
-    public void undraw() {
-        sprite.undraw();
-    }
-
-
-    // Use this for initialization
-    void Start()
-    {
-        time = Time.time;
-        timeloc = time;
-        currentTime = timeOfDay.morning;
-        mapX = (int)homeTile.x;
-        mapY = (int)homeTile.y;
-        base.Start();
-    }
-
-    // Places the npc at the given location
-    public void PlaceAt(int mX, int mY, int tX, int tY, int tZ) {
-        Vector3 pos = new Vector3(tX, tY, tZ);
-        mapX = mX;
-        mapY = mY;
-        tileX = tX;
-        tileY = tY;
-        sprite.placeAt(pos);
-    }
-
-    protected override void OnCantMove<T>(T component) {
-    }
-
     public void setUp(Vector3 homeTile, Vector3 workTile, string ID)
     {
         this.homeTile = homeTile;
@@ -151,9 +96,66 @@ public class NPC : MovingObject {
         this.ID = ID;
     }
 
+    // Places the npc at the given location
+    public void PlaceAt(int mX, int mY, int tX, int tY, int tZ)
+    {
+        Vector3 pos = new Vector3(tX, tY, tZ);
+        mapX = mX;
+        mapY = mY;
+        tileX = tX;
+        tileY = tY;
+        transform.position = pos;
+        sprite.placeAt(pos);
+    }
+
+    // Draws the NPC to the screen
+    public void draw()
+    {
+        sprite.draw();
+    }
+
+    // Removes the npc from the screen
+    public void undraw()
+    {
+        sprite.undraw();
+    }
+
+    protected override void OnCantMove<T>(T component)
+    {
+
+    }
+
+
+
+    // Decides what the NPC's initial state will be
+    private void initState()
+    {
+        int mood = 0;
+        string[] default_states = { "normal", "happy", "sad", "angry" };
+
+        // 25% chance to be something other than neutral state on default
+        if (Random.Range(0, 4) == 0)
+            mood = Random.Range(0, 4);
+
+        // update sprite to match state
+        states.Add(default_states[mood]);
+        sprite.setState(states[0]);
+    }
+
+    // Decides what the NPC's initial personality will be
+    private void initPersonality()
+    {
+        // Initiate the personality
+        int persona = Random.Range(0, 10);
+        string[] personalities = { "helpful", "aggressive", "outgoing", "alcoholic", "greedy", "shy", "brave", "amoral", "lazy", "psychotic" };
+
+        // update sprite to match personality
+        personality = personalities[persona];
+        sprite.setState(personality);
+    }
+
     private void goTowardsHome()
     {
-        //throw new NotImplementedException();
         int dx = (int)homeTile.x - mapX;
         int dy = (int)homeTile.y - mapY;
         mapX += dx;
@@ -165,7 +167,6 @@ public class NPC : MovingObject {
 
     private void goTowardsWork()
     {
-        //throw new NotImplementedException();
         int dx = (int)workTile.x - mapX;
         int dy = (int)workTile.y - mapY;
         if (dx != 0)
@@ -175,12 +176,7 @@ public class NPC : MovingObject {
         mapX += dx;
         mapY += dy;
         if (dx != 0 || dy != 0)
-            GameManager.logger(ID + "Entered Tile " + mapX + " " + mapY + " While Going To Workat " + Time.time + "\n");
+            GameManager.logger(ID + "Entered Tile " + mapX + " " + mapY + " While Going To Work at " + Time.time + "\n");
         //AttemptMove<NPC>(dx, dy);
     }
-
-   
-
-
-
 }
