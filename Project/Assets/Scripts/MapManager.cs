@@ -16,7 +16,10 @@ public class MapManager : MonoBehaviour {
     public TileManager tileManager;
     public TileManager[][] map = new TileManager[10][];
 
+	public static GameObject quest; 
+
     // Prefab objects
+	//public GameObject quest;
     public GameObject caveInRoad, caveOutRoad, forestRoad, townRoad, marketRoad, farmRoad;
     public GameObject[] caveInOuterWall, caveOutOuterWall, forestOuterWall, townOuterWall, marketOuterWall, farmOuterWall;
     public GameObject[] caveInWalls, caveOutWalls, forestWalls, townWalls, marketWalls, farmWalls;
@@ -74,6 +77,25 @@ public class MapManager : MonoBehaviour {
         return tiles;
     }
 
+	void GiveQuest() {
+		int objectType = Random.Range(0, 1);
+		if (objectType == 0) {
+			int npc = Random.Range (0, activeNPCs.Length);
+			if(activeNPCs[npc].GetComponent<NPC>().hasQuest){
+				GiveQuest ();
+			}else{
+				activeNPCs [npc].GetComponent<NPC> ().hasQuest = true;
+			}
+		} else {
+			int npc = Random.Range (0, npcs.Count);
+			if(npcs[npc].GetComponent<NPC>().hasQuest){
+				GiveQuest();
+			}else{
+				npcs[npc].GetComponent<NPC>().hasQuest = true;
+			}
+		}
+	}
+
     // Sets up the map
     void MapSetup() {
         // Figure out where the town will be located
@@ -124,7 +146,11 @@ public class MapManager : MonoBehaviour {
             Vector3 home = town[Random.Range(0, town.Count)];
             Vector3 work = town[Random.Range(0, town.Count)];
             character.setUp(home, work, "" + x);
+
         }
+		for (int x = 0; x < Random.Range (5, 10); x++) {
+			GiveQuest();
+		}
 
     }
 

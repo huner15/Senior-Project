@@ -6,6 +6,8 @@ using System;
 
 public class NPC : MovingObject
 {
+	public Boolean hasQuest = false;
+
     // Sprite representing this NPC
     private npcSprite sprite;
 
@@ -108,6 +110,12 @@ public class NPC : MovingObject
 
         if (sprite != null)
             sprite.placeAt(pos);
+
+		if(hasQuest)
+		{
+			GameObject quest = Instantiate(MapManager.quest) as GameObject;
+			quest.GetComponent<Transform>().position = new Vector3(tX, tY + .8f, tZ);
+		}
     }
 
     // Draws the NPC to the screen

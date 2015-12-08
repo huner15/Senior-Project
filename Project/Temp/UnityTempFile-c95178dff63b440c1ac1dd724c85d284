@@ -1,13 +1,15 @@
 -debug
 -target:library
 -nowarn:0169
--out:Temp/Assembly-CSharp.dll
--r:"C:/Program Files/Unity/Editor/Data/Managed/UnityEngine.dll"
--r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll"
--r:"C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll"
--r:"C:/Program Files/Unity/Editor/Data/Managed/UnityEditor.dll"
--r:"C:/Program Files/Unity/Editor/Data/PlaybackEngines/iOSSupport\UnityEditor.iOS.Extensions.Xcode.dll"
--define:UNITY_5_2_3
+-out:'Temp/Assembly-CSharp.dll'
+-r:'/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEngine.dll'
+-r:'/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/UnityAnalytics/UnityEngine.Analytics.dll'
+-r:'/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/Networking/UnityEngine.Networking.dll'
+-r:'/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll'
+-r:'/Applications/Unity/Unity.app/Contents/UnityExtensions/Unity/Advertisements/UnityEngine.Advertisements.dll'
+-r:'/Applications/Unity/Unity.app/Contents/Frameworks/Managed/UnityEditor.dll'
+-r:'/Applications/Unity/Unity.app/Contents/PlaybackEngines/iOSSupport/UnityEditor.iOS.Extensions.Xcode.dll'
+-define:UNITY_5_2_1
 -define:UNITY_5_2
 -define:UNITY_5
 -define:ENABLE_NEW_BUGREPORTER
@@ -68,14 +70,10 @@
 -define:UNITY_ASSERTIONS
 -define:UNITY_EDITOR
 -define:UNITY_EDITOR_64
--define:UNITY_EDITOR_WIN
-Assets/Scripts/Building.cs
-Assets/Scripts/GameManager.cs
-Assets/Scripts/Loader.cs
-Assets/Scripts/MapManager.cs
-Assets/Scripts/MovingObject.cs
-Assets/Scripts/NPC.cs
-Assets/Scripts/Object.cs
-Assets/Scripts/Player.cs
-Assets/Scripts/TileManager.cs
-Assets/Scripts/npcSprite.cs
+-define:UNITY_EDITOR_OSX
+'Assets/Scripts/GameManager.cs'
+'Assets/Scripts/Loader.cs'
+'Assets/Scripts/MapManager.cs'
+'Assets/Scripts/MovingObject.cs'
+'Assets/Scripts/Player.cs'
+'Assets/Scripts/TileManager.cs'
