@@ -31,6 +31,7 @@ public class MapManager : MonoBehaviour {
     public List<Vector3> npcLocations = new List<Vector3>();        // List of all NPC locations
 
     public GameObject[] activeNPCs;
+    public List<Vector3> tempLocations = new List<Vector3>();       // temporary locations where active NPCs are
     public GameObject ActiveNPCBase;
 
     // Instantiates all of the tiles on the map
@@ -168,5 +169,11 @@ public class MapManager : MonoBehaviour {
     // Removes the tile at the location from the screen
     public void Undraw(int x, int y) {
         map[x][y].Undraw();
+
+        // Adds back the temporary locations to the tile
+        for (int i = 0; i < tempLocations.Count; i++)
+        {
+            map[x][y].grid.addTile(tempLocations[i].x, tempLocations[i].y);
+        }
     }
 }

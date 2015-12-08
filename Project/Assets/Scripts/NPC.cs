@@ -17,7 +17,7 @@ public class NPC : MovingObject
     // Places this npc goes
     private Building home;
     private Building work;
-
+    public Boolean placed = false;
     private Vector3 homeTile, workTile;
     private float timeloc;
     private float time;
@@ -105,7 +105,9 @@ public class NPC : MovingObject
         tileX = tX;
         tileY = tY;
         transform.position = pos;
-        sprite.placeAt(pos);
+
+        if (sprite != null)
+            sprite.placeAt(pos);
     }
 
     // Draws the NPC to the screen

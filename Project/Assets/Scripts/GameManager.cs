@@ -42,6 +42,31 @@ public class GameManager : MonoBehaviour {
         InitGame();
 	}
 
+
+    void Update()
+    {
+        for (int i = 0; i < mapManager.activeNPCs.Length; i++)
+        {
+            NPC npc = mapManager.activeNPCs[i].GetComponent<NPC>();
+            if (npc.mapX == playerManager.mapX && npc.mapY == playerManager.mapY)
+            {
+                if (npc.placed == false)
+                {
+                    Vector3 tileLoc = mapManager.map[npc.mapX][npc.mapY].EmptyLocation();
+                    npc.PlaceAt((int)npc.mapX, (int)npc.mapY, (int)tileLoc.x, (int)tileLoc.y, 0);
+                    mapManager.tempLocations.Add(tileLoc);
+                    npc.placed = true;
+                }
+                
+            }
+            else
+            {
+                npc.placed = false;
+                npc.PlaceAt((int)npc.mapX, (int)npc.mapY, 11, 11, 0);
+            }
+        }
+    }
+
     // Initializes the game
     void InitGame() {
 

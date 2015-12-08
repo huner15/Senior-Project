@@ -12,3 +12,6 @@ Project/Library/metadata/00/00b23e1ca2046d64180feb14cdae811f
 Project/Library/metadata/02/02256c9ce312a2841a07f47a5148f397
 log.txt
 Porject/Library/metadata/*
+*.mdb
+Project/Library/ScriptAssemblies/Assembly-CSharp.dll
+Project/Temp/UnityLockfile

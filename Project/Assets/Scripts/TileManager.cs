@@ -60,6 +60,12 @@ public class Grid {
         gridPositions.RemoveAt(index);
     }
 
+    // Adds the tile back into the list of possible grid locations
+    public void addTile(float x, float y)
+    {
+        gridPositions.Add(new Vector3(x, y, 0));
+    }
+
     // Remove all tiles that overlap with the object
     public void removeAdjacent(float locX, float locY, int sizeX, int sizeY) {
         for (int x = 1; x < sizeX; x++) {
@@ -118,7 +124,7 @@ public class TileManager : MonoBehaviour {
 
     // Grid information
     private Transform boardHolder;       // Reference to the transform of the tile
-    private Grid grid;                   // Possible locations to place tiles
+    public Grid grid;                   // Possible locations to place tiles
 
     // All objects on this tile
     public List<GameObject> floors = new List<GameObject>();        // prefabs for the floor
