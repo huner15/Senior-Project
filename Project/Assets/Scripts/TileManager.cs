@@ -198,6 +198,7 @@ public class TileManager : MonoBehaviour {
             instance.GetComponent<NPC>().init();
             instance.GetComponent<NPC>().PlaceAt(tileCol, tileRow, (int)randomPosition.x, (int)randomPosition.y, (int)randomPosition.z);
             instance.SetActive(false);
+            
             npcs.Add(instance);
             npcLocations.Add(randomPosition);
         }
