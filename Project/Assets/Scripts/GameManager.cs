@@ -48,6 +48,8 @@ public class GameManager : MonoBehaviour {
         for (int i = 0; i < mapManager.activeNPCs.Length; i++)
         {
             NPC npc = mapManager.activeNPCs[i].GetComponent<NPC>();
+
+            // Place the NPC so that it can be drawn on the current map tile
             if (npc.mapX == playerManager.mapX && npc.mapY == playerManager.mapY)
             {
                 if (npc.placed == false)
@@ -59,6 +61,7 @@ public class GameManager : MonoBehaviour {
                 }
                 
             }
+            // Place the NPC off screen if not on current map tile
             else
             {
                 npc.placed = false;
