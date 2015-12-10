@@ -6,14 +6,16 @@ using System;
 
 public class NPC : MovingObject
 {
+	public Boolean hasQuest = false;
+
     // Sprite representing this NPC
     private npcSprite sprite;
 
     // States this npc currently has
-    private string name;
+    new private string name;
     private string personality;
     private List<string> states = new List<string>();
-
+    public GameObject quest;
     // Places this npc goes
     private Building home;
     private Building work;
@@ -32,14 +34,17 @@ public class NPC : MovingObject
 
 
     // Use this for initialization
-    void Start()
+    new void Start()
     {
         time = Time.time;
         timeloc = time;
         currentTime = timeOfDay.morning;
         mapX = (int)homeTile.x;
         mapY = (int)homeTile.y;
+       
         base.Start();
+        
+
     }
 
     // Update is called once per frame
@@ -97,7 +102,7 @@ public class NPC : MovingObject
     }
 
     // Places the npc at the given location
-    public void PlaceAt(int mX, int mY, int tX, int tY, int tZ)
+    new public void PlaceAt(int mX, int mY, int tX, int tY, int tZ)
     {
         Vector3 pos = new Vector3(tX, tY, tZ);
         mapX = mX;
@@ -105,21 +110,44 @@ public class NPC : MovingObject
         tileX = tX;
         tileY = tY;
         transform.position = pos;
-
+        if (hasQuest)
+        {
+            quest.GetComponent<Transform>().position = new Vector3(tX, tY + .8f, tZ);
+        }
         if (sprite != null)
             sprite.placeAt(pos);
+
+		
+    }
+    public void initQuest()
+    {
+        hasQuest = true;
+        quest = Instantiate(map.quest) as GameObject;
+        if(sprite != null)
+        {
+            PlaceAt(mapX, mapY, tileX, tileY, 0);
+            quest.SetActive(false);
+        }
     }
 
     // Draws the NPC to the screen
     public void draw()
     {
         sprite.draw();
+        if(hasQuest)
+        {
+            quest.SetActive(true);
+        }
     }
 
     // Removes the npc from the screen
     public void undraw()
     {
         sprite.undraw();
+        if(hasQuest)
+        {
+            quest.SetActive(false);
+        }
     }
 
     protected override void OnCantMove<T>(T component)
@@ -160,6 +188,18 @@ public class NPC : MovingObject
     {
         int dx = (int)homeTile.x - mapX;
         int dy = (int)homeTile.y - mapY;
+        if(dx > dy)
+        {
+            dy = 0;
+        }
+        if(dy >= dx)
+        {
+            dx = 0;
+        }
+        if (dx != 0)
+            dx = dx / (Math.Abs(dx));
+        if (dy != 0)
+            dy = dy / (Math.Abs(dy));
         mapX += dx;
         mapY += dy;
         if (dx != 0 || dy != 0)
@@ -171,6 +211,14 @@ public class NPC : MovingObject
     {
         int dx = (int)workTile.x - mapX;
         int dy = (int)workTile.y - mapY;
+        if (dx > dy)
+        {
+            dy = 0;
+        }
+        if (dy >= dx)
+        {
+            dx = 0;
+        }
         if (dx != 0)
             dx = dx / (Math.Abs(dx));
         if (dy != 0)

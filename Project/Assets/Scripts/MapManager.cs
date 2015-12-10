@@ -16,8 +16,11 @@ public class MapManager : MonoBehaviour {
     public TileManager tileManager;
     public TileManager[][] map = new TileManager[10][];
 
+	
+
     // Prefab objects
-    public GameObject caveInRoad, caveOutRoad, forestRoad, townRoad, marketRoad, farmRoad;
+	//public GameObject quest;
+    public GameObject caveInRoad, caveOutRoad, forestRoad, townRoad, marketRoad, farmRoad, quest;
     public GameObject[] caveInOuterWall, caveOutOuterWall, forestOuterWall, townOuterWall, marketOuterWall, farmOuterWall;
     public GameObject[] caveInWalls, caveOutWalls, forestWalls, townWalls, marketWalls, farmWalls;
     public GameObject[] caveInFloors, caveOutFloors, forestFloors, townFloors, marketFloors, farmFloors;
@@ -74,6 +77,28 @@ public class MapManager : MonoBehaviour {
         return tiles;
     }
 
+	void GiveQuest() {
+		int objectType = Random.Range(0, 2);
+        
+        if (objectType == 0) {
+           
+            int npc = Random.Range (0, activeNPCs.Length);
+			if(activeNPCs[npc].GetComponent<NPC>().hasQuest){
+				GiveQuest ();
+			}else{
+				activeNPCs [npc].GetComponent<NPC>().initQuest();
+			}
+		} else {
+            
+			int npc = Random.Range (0, npcs.Count-1);
+			if(npcs[npc].GetComponent<NPC>().hasQuest){
+				GiveQuest();
+			}else{
+				npcs[npc].GetComponent<NPC>().initQuest();
+			}
+		}
+	}
+
     // Sets up the map
     void MapSetup() {
         // Figure out where the town will be located
@@ -124,7 +149,9 @@ public class MapManager : MonoBehaviour {
             Vector3 home = town[Random.Range(0, town.Count)];
             Vector3 work = town[Random.Range(0, town.Count)];
             character.setUp(home, work, "" + x);
+
         }
+		
 
     }
 
@@ -143,6 +170,7 @@ public class MapManager : MonoBehaviour {
                     Vector3 loc = map[x][y].npcLocations[i];
                     npcLocations.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
                     npcs.Add(map[x][y].npcs[i]);
+                    
                 }
             }
         }
@@ -159,6 +187,15 @@ public class MapManager : MonoBehaviour {
         initMap();
         MapSetup();
         GetReferences();
+
+        foreach(GameObject npc in npcs)
+        {
+            npc.GetComponent<NPC>().map = this;
+        }
+        for (int x = 0; x < Random.Range(5, 10); x++)
+        {
+            GiveQuest();
+        }
     }
 
     // Draws the tile at the given location to the screen

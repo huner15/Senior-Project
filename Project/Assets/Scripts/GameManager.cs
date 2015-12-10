@@ -66,6 +66,7 @@ public class GameManager : MonoBehaviour {
             {
                 npc.placed = false;
                 npc.PlaceAt((int)npc.mapX, (int)npc.mapY, 11, 11, 0);
+
             }
         }
     }
