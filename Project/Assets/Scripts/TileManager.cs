@@ -145,11 +145,17 @@ public class TileManager : MonoBehaviour {
             for (int y = 0; y < rows; y++) {
                 // Create a random floor tile
                 GameObject toInstantiate = floorTiles[Random.Range(0, floorTiles.Length)];
+
                 // Edge of the map; create an impassable wall
                 if ((x == 0 && tileCol == 0) || (x == (columns - 1) && tileCol == (columns - 1)) || (y == 0 && tileRow == 0) || (y == (rows - 1) && tileRow == (rows - 1))) {
                     toInstantiate = outerWallTiles[Random.Range(0, outerWallTiles.Length)];
                     grid.removeTile(x, y);
                 }
+                // Roads; don't allow anything to go here
+                if (x == 4 || x == 5 || y == 4 || y == 5) {
+                    grid.removeTile(x, y);
+                }
+
                 // Add the tile to the game
                 GameObject instance = Instantiate(toInstantiate, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
                 instance.transform.SetParent(boardHolder);
@@ -226,7 +232,7 @@ public class TileManager : MonoBehaviour {
             buildingCount = new Count(1, 2);
             wallCount = new Count(0, 0);
             npcCount = new Count(1, 2);
-            bSizeX = 3;
+            bSizeX = 2;
             bSizeY = 2;
         }
         // Tile is a town; has houses and people
@@ -234,7 +240,7 @@ public class TileManager : MonoBehaviour {
             buildingCount = new Count(1, 2);
             wallCount = new Count(0, 5);
             npcCount = new Count(1, 2);
-            bSizeX = 3;
+            bSizeX = 2;
             bSizeY = 2;
         }
         // Tile is a forest; has trees and bushes
