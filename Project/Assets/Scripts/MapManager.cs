@@ -62,8 +62,7 @@ public class MapManager : MonoBehaviour {
     }
 
     // Sets up the map
-    public void SetupScene()
-    {
+    public void SetupScene() {
         numCave = Random.Range(1, 3);       // 1 to 2 caves
         numMarket = Random.Range(3, 6);     // 3 to 5 markets
         numFarm = Random.Range(5, 8);       // 5 to 7 farms
@@ -77,14 +76,12 @@ public class MapManager : MonoBehaviour {
     }
 
     // Draws the tile at the given location to the screen
-    public void Draw(int x, int y)
-    {
+    public void Draw(int x, int y) {
         map[x][y].Draw();
     }
 
     // Removes the tile at the location from the screen
-    public void Undraw(int x, int y)
-    {
+    public void Undraw(int x, int y) {
         map[x][y].Undraw();
     }
 
@@ -130,29 +127,30 @@ public class MapManager : MonoBehaviour {
         return tiles;
     }
 
-    /*
 	void GiveQuest() {
 		int objectType = Random.Range(0, 2);
         
         if (objectType == 0) {
-           
-            int npc = Random.Range (0, activeNPCs.Length);
-			if(activeNPCs[npc].GetComponent<NPC>().hasQuest){
+            int npc = Random.Range (0, npcs.Count);
+
+			if(npcs[npc].GetComponent<NPC>().hasQuest) {
 				GiveQuest ();
-			}else{
-				activeNPCs [npc].GetComponent<NPC>().initQuest();
 			}
-		} else {
-            
+            else {
+				npcs[npc].GetComponent<NPC>().initQuest();
+			}
+		}
+        else {
 			int npc = Random.Range (0, npcs.Count-1);
+
 			if(npcs[npc].GetComponent<NPC>().hasQuest){
 				GiveQuest();
-			}else{
+			}
+            else {
 				npcs[npc].GetComponent<NPC>().initQuest();
 			}
 		}
 	}
-     */
 
     // Sets up the map
     private void MapSetup() {
@@ -211,12 +209,9 @@ public class MapManager : MonoBehaviour {
             character.init(home, work, i);
             character.map = this;
         }
-        /*
-        for (int x = 0; x < Random.Range(5, 10); x++)
-        {
+        for (int x = 0; x < Random.Range(5, 10); x++) {
             GiveQuest();
         }
-        */
     }
 
     // Finds and stores all references to buildings and npcs on all tiles

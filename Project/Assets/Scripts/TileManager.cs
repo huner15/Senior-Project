@@ -139,8 +139,7 @@ public class TileManager : MonoBehaviour {
 
 
     // Tells the tile what to use as sprites
-    public void SetupSprites(GameObject road, GameObject[] outerwall, GameObject[] floor, GameObject[] building, GameObject[] wall)
-    {
+    public void SetupSprites(GameObject road, GameObject[] outerwall, GameObject[] floor, GameObject[] building, GameObject[] wall) {
         roadTile = road;
         outerWallTiles = outerwall;
         floorTiles = floor;
@@ -149,16 +148,14 @@ public class TileManager : MonoBehaviour {
     }
 
     // Initializes and lays out the tile
-    public void SetupScene(int tRow, int tCol, String type)
-    {
+    public void SetupScene(int tRow, int tCol, String type) {
         // Instantiate the tile
         tileType = type;            // what type of tile is this?
         tileRow = tRow;             // where is the tile on the map?
         tileCol = tCol;
 
         // Tile is a market; has lots of stalls and people
-        if (tileType.Equals("Market"))
-        {
+        if (tileType.Equals("Market")) {
             buildingCount = new Count(1, 2);
             wallCount = new Count(0, 0);
             npcCount = new Count(1, 2);
@@ -166,8 +163,7 @@ public class TileManager : MonoBehaviour {
             bSizeY = 2;
         }
         // Tile is a town; has houses and people
-        else if (tileType.Equals("Town"))
-        {
+        else if (tileType.Equals("Town")) {
             buildingCount = new Count(1, 2);
             wallCount = new Count(0, 5);
             npcCount = new Count(1, 2);
@@ -175,8 +171,7 @@ public class TileManager : MonoBehaviour {
             bSizeY = 2;
         }
         // Tile is a forest; has trees and bushes
-        else if (tileType.Equals("Forest"))
-        {
+        else if (tileType.Equals("Forest")) {
             buildingCount = new Count(0, 0);
             wallCount = new Count(10, 30);
             npcCount = new Count(0, 0);
@@ -184,8 +179,7 @@ public class TileManager : MonoBehaviour {
             bSizeY = 1;
         }
         // Tile is a cave entrance; has rocks and caves
-        else if (tileType.Equals("Cave"))
-        {
+        else if (tileType.Equals("Cave")) {
             buildingCount = new Count(1, 1);
             wallCount = new Count(5, 10);
             npcCount = new Count(0, 0);
@@ -193,8 +187,7 @@ public class TileManager : MonoBehaviour {
             bSizeY = 2;
         }
         // Tile is a farm; has crops and animals
-        else if (tileType.Equals("Farm"))
-        {
+        else if (tileType.Equals("Farm")) {
             buildingCount = new Count(0, 0);
             wallCount = new Count(5, 20);
             npcCount = new Count(0, 1);
@@ -213,8 +206,7 @@ public class TileManager : MonoBehaviour {
     }
 
     // Draw this tile to the screen
-    public void Draw()
-    {
+    public void Draw() {
         // Draw the floor
         for (int i = 0; i < floors.Count; i++)
             floors[i].SetActive(true);
@@ -225,8 +217,7 @@ public class TileManager : MonoBehaviour {
         for (int i = 0; i < buildings.Count; i++)
             buildings[i].SetActive(true);
         // Draw the people
-        for (int i = 0; i < npcs.Count; i++)
-        {
+        for (int i = 0; i < npcs.Count; i++) {
             npcs[i].SetActive(true);
             npcs[i].GetComponent<NPC>().draw();
         }
@@ -251,14 +242,12 @@ public class TileManager : MonoBehaviour {
     }
 
     // Finds and returns a random empty location on this tile, if there is one
-    public Vector3 EmptyLocation()
-    {
+    public Vector3 EmptyLocation() {
         Vector3 emptyLoc;
 
         if (grid.count() == 0)
             emptyLoc = new Vector3(-1, -1, -1);
-        else
-        {
+        else {
             int index = Random.Range(0, grid.count());
             emptyLoc = grid.gridPositions[index];
             grid.removeAt(index);
@@ -267,8 +256,7 @@ public class TileManager : MonoBehaviour {
     }
 
     // Is there an impassable object at this location?
-    public Boolean ObjectAt(int x, int y)
-    {
+    public Boolean ObjectAt(int x, int y) {
         // There's a building here
         if (grid.findTile(buildingLocations, x, y) != -1)
             return true;
