@@ -9,6 +9,7 @@ public class MapManager : MonoBehaviour {
     private int rows = 10;          // # of rows in a tile
     private int townSize = 7;       // size of the town
     private int numActiveNpcs = 10;
+
     // Map information
     private int numCave;            // # of caves on this map
     private int numMarket;          // # of markets in the town
@@ -16,10 +17,8 @@ public class MapManager : MonoBehaviour {
     public TileManager tileManager;
     public TileManager[][] map = new TileManager[10][];
 
-	
-
     // Prefab objects
-	//public GameObject quest;
+    public Player player;
     public GameObject caveInRoad, caveOutRoad, forestRoad, townRoad, marketRoad, farmRoad, quest;
     public GameObject[] caveInOuterWall, caveOutOuterWall, forestOuterWall, townOuterWall, marketOuterWall, farmOuterWall;
     public GameObject[] caveInWalls, caveOutWalls, forestWalls, townWalls, marketWalls, farmWalls;
@@ -33,9 +32,63 @@ public class MapManager : MonoBehaviour {
     public List<GameObject> npcs = new List<GameObject>();          // List of all NPCs on all tiles
     public List<Vector3> npcLocations = new List<Vector3>();        // List of all NPC locations
 
-    public GameObject[] activeNPCs;
-    public List<Vector3> tempLocations = new List<Vector3>();       // temporary locations where active NPCs are
-    public GameObject ActiveNPCBase;
+
+
+    void Update() {
+        // Clear the previous npc locations on the tiles
+        for (int x = 0; x < columns; x++) {
+            for (int y = 0; y < rows; y++) {
+                map[x][y].ClearNpcs();
+            }
+        }
+
+        // Update all of the NPCs
+        for (int i = 0; i < npcs.Count; i++) {
+            // Update the NPC
+            NPC character = npcs[i].GetComponent<NPC>();
+            character.Update();
+
+            // Update map locations
+            Vector3 newLoc = new Vector3(character.tileX, character.tileY, 0);
+            npcLocations[i] = newLoc;
+            
+            // Update tile locations
+            map[character.mapX][character.mapY].npcs.Add(npcs[i]);
+            map[character.mapX][character.mapY].npcLocations.Add(newLoc);
+        }
+
+        // Redraw the map tile
+        map[player.mapX][player.mapY].Draw();
+    }
+
+    // Sets up the map
+    public void SetupScene()
+    {
+        numCave = Random.Range(1, 3);       // 1 to 2 caves
+        numMarket = Random.Range(3, 6);     // 3 to 5 markets
+        numFarm = Random.Range(5, 8);       // 5 to 7 farms
+        tileManager = GetComponent<TileManager>();
+
+        grid = new Grid(columns, rows);
+        initMap();
+        MapSetup();
+        GetReferences();
+        SetupNPCs();
+    }
+
+    // Draws the tile at the given location to the screen
+    public void Draw(int x, int y)
+    {
+        map[x][y].Draw();
+    }
+
+    // Removes the tile at the location from the screen
+    public void Undraw(int x, int y)
+    {
+        map[x][y].Undraw();
+    }
+
+
 
     // Instantiates all of the tiles on the map
     private void initMap() {
@@ -48,7 +101,7 @@ public class MapManager : MonoBehaviour {
     }
 
     // Determines where the town will be located
-    List<Vector3> getTown() {
+    private List<Vector3> getTown() {
         List<Vector3> town = new List<Vector3>();
         int townX = Random.Range(3, 7);
         int townY = Random.Range(3, 7);
@@ -63,7 +116,7 @@ public class MapManager : MonoBehaviour {
     }
 
     // Assigns random map locations for certain map tiles
-    List<Vector3> assignMapLocations(List<Vector3> mapLocs, int numTile) {
+    private List<Vector3> assignMapLocations(List<Vector3> mapLocs, int numTile) {
         // The list of where the map tiles are
         List<Vector3> tiles = new List<Vector3>();
 
@@ -77,6 +130,7 @@ public class MapManager : MonoBehaviour {
         return tiles;
     }
 
+    /*
 	void GiveQuest() {
 		int objectType = Random.Range(0, 2);
         
@@ -98,9 +152,10 @@ public class MapManager : MonoBehaviour {
 			}
 		}
 	}
+     */
 
     // Sets up the map
-    void MapSetup() {
+    private void MapSetup() {
         // Figure out where the town will be located
         List<Vector3> town = getTown();
         // Figure out where the markets will be located in the town
@@ -140,23 +195,32 @@ public class MapManager : MonoBehaviour {
                 }
             }
         }
+    }
 
-        activeNPCs = new GameObject[numActiveNpcs];
-        for (int x = 0; x < numActiveNpcs; x++)
-        {
-            activeNPCs[x] = Instantiate(ActiveNPCBase) as GameObject;
-            NPC character = activeNPCs[x].GetComponent<NPC>();
-            Vector3 home = town[Random.Range(0, town.Count)];
-            Vector3 work = town[Random.Range(0, town.Count)];
-            character.setUp(home, work, "" + x);
+    // Sets up the NPCs
+    private void SetupNPCs() {
+        List<Vector3> tempBuildings = new List<Vector3>(buildingLocations);
 
+        // Give each of the NPCs a home and a workplace
+        for (int i = 0; i < npcs.Count; i++) {
+            NPC character = npcs[i].GetComponent<NPC>();
+            int homeLoc = Random.Range(0, tempBuildings.Count);
+            int workLoc = Random.Range(0, tempBuildings.Count);
+            Vector3 home = tempBuildings[homeLoc];
+            Vector3 work = tempBuildings[workLoc];
+            character.init(home, work, i);
+            character.map = this;
         }
-		
-
+        /*
+        for (int x = 0; x < Random.Range(5, 10); x++)
+        {
+            GiveQuest();
+        }
+        */
     }
 
     // Finds and stores all references to buildings and npcs on all tiles
-    void GetReferences() {
+    private void GetReferences() {
         for (int x = 0; x < columns; x++) {
             for (int y = 0; y < rows; y++) {
                 // Find all the buildings
@@ -170,47 +234,8 @@ public class MapManager : MonoBehaviour {
                     Vector3 loc = map[x][y].npcLocations[i];
                     npcLocations.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
                     npcs.Add(map[x][y].npcs[i]);
-                    
                 }
             }
-        }
-    }
-
-    // Sets up the map
-    public void SetupScene() {
-        numCave = Random.Range(1, 3);       // 1 to 2 caves
-        numMarket = Random.Range(3, 6);     // 3 to 5 markets
-        numFarm = Random.Range(5, 8);       // 5 to 7 farms
-        tileManager = GetComponent<TileManager>();
-
-        grid = new Grid(columns, rows);
-        initMap();
-        MapSetup();
-        GetReferences();
-
-        foreach(GameObject npc in npcs)
-        {
-            npc.GetComponent<NPC>().map = this;
-        }
-        for (int x = 0; x < Random.Range(5, 10); x++)
-        {
-            GiveQuest();
-        }
-    }
-
-    // Draws the tile at the given location to the screen
-    public void Draw(int x, int y) {
-        map[x][y].Draw();
-    }
-
-    // Removes the tile at the location from the screen
-    public void Undraw(int x, int y) {
-        map[x][y].Undraw();
-
-        // Adds back the temporary locations to the tile
-        for (int i = 0; i < tempLocations.Count; i++)
-        {
-            map[x][y].grid.addTile(tempLocations[i].x, tempLocations[i].y);
         }
     }
 }

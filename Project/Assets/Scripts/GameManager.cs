@@ -36,44 +36,14 @@ public class GameManager : MonoBehaviour {
             instance = this;
         else if (instance != this)
             Destroy(gameObject);
+
         // Don't destroy when reloading scene
         DontDestroyOnLoad(gameObject);
-
         InitGame();
 	}
 
-
-    void Update()
-    {
-        for (int i = 0; i < mapManager.activeNPCs.Length; i++)
-        {
-            NPC npc = mapManager.activeNPCs[i].GetComponent<NPC>();
-
-            // Place the NPC so that it can be drawn on the current map tile
-            if (npc.mapX == playerManager.mapX && npc.mapY == playerManager.mapY)
-            {
-                if (npc.placed == false)
-                {
-                    Vector3 tileLoc = mapManager.map[npc.mapX][npc.mapY].EmptyLocation();
-                    npc.PlaceAt((int)npc.mapX, (int)npc.mapY, (int)tileLoc.x, (int)tileLoc.y, 0);
-                    mapManager.tempLocations.Add(tileLoc);
-                    npc.placed = true;
-                }
-                
-            }
-            // Place the NPC off screen if not on current map tile
-            else
-            {
-                npc.placed = false;
-                npc.PlaceAt((int)npc.mapX, (int)npc.mapY, 11, 11, 0);
-
-            }
-        }
-    }
-
     // Initializes the game
     void InitGame() {
-
         // Create the map
         map = Instantiate(map, new Vector3(5.5f, 5.5f, 0), Quaternion.identity) as GameObject;
         mapManager = map.GetComponent<MapManager>();
@@ -93,6 +63,7 @@ public class GameManager : MonoBehaviour {
         playerManager.map = mapManager;
 
         // Draw our area on the map
+        mapManager.player = playerManager;
         mapManager.Draw(playerManager.mapX, playerManager.mapY);
     }
 }

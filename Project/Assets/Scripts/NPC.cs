@@ -4,105 +4,101 @@ using System.Collections.Generic;
 using Random = UnityEngine.Random;
 using System;
 
-public class NPC : MovingObject
+public enum timeOfDay
 {
-	public Boolean hasQuest = false;
+    morning, evening, night
+}
 
+public class NPC : MovingObject {
     // Sprite representing this NPC
     private npcSprite sprite;
 
     // States this npc currently has
-    new private string name;
+    public Boolean hasQuest = false;
+    public GameObject quest;
+    private string name;
     private string personality;
     private List<string> states = new List<string>();
-    public GameObject quest;
+
     // Places this npc goes
-    private Building home;
-    private Building work;
-    public Boolean placed = false;
+    private Building home, work;
     private Vector3 homeTile, workTile;
+
+    // Movement stuff
+    int ID; // npc's id on the map
     private float timeloc;
     private float time;
-    int timeOfDayLength = 1; //in minutes
-    String ID;
-    enum timeOfDay
-    {
-        morning, evening, night
-    }
+    private float movementSpeed;
+    int timeOfDayLength = 1; // in minutes
     timeOfDay currentTime;
 
 
 
     // Use this for initialization
-    new void Start()
+    public void Start()
     {
         time = Time.time;
         timeloc = time;
         currentTime = timeOfDay.morning;
-        mapX = (int)homeTile.x;
-        mapY = (int)homeTile.y;
-       
         base.Start();
-        
-
     }
 
     // Update is called once per frame
-    void Update()
-    {
-        //print("time " + (time - Time.time));
-        if (currentTime == timeOfDay.morning && Time.time - timeloc > 10)
-        {
-            goTowardsWork();
+    public void Update() {
+        // NPC goes to work
+        if (currentTime == timeOfDay.morning && Time.time - timeloc > movementSpeed) {
+            goTowards(workTile);
             timeloc = Time.time;
         }
-        if (currentTime == timeOfDay.evening && Time.time - timeloc > 10)
-        {
-            goTowardsHome();
+        // NPC goes home
+        if (currentTime == timeOfDay.evening && Time.time - timeloc > movementSpeed) {
+            goTowards(homeTile);
             timeloc = Time.time;
         }
-        if (Time.time - time > timeOfDayLength * 60)
-        {
+        // Michael what is this doing?
+        if (Time.time - time > timeOfDayLength * 60) {
             time = Time.time;
-            if (currentTime == timeOfDay.morning)
-            {
+            if (currentTime == timeOfDay.morning) {
                 currentTime = timeOfDay.evening;
             }
-            else if (currentTime == timeOfDay.evening)
-            {
+            else if (currentTime == timeOfDay.evening) {
                 currentTime = timeOfDay.night;
             }
-            else
-            {
+            else {
                 currentTime = timeOfDay.morning;
             }
         }
     }
 
     // Create the initial NPC
-    public void init()
+    public void init(Vector3 homeTile, Vector3 workTile, int ID)
     {
+        // Decide where the npc works and lives
+        this.homeTile = homeTile;
+        this.workTile = workTile;
+        this.ID = ID;
+
         // Create a random sprite and initialize it
         sprite = GetComponent<npcSprite>();
         sprite.init();
 
-        // Create a random state for the npc
+        // Create a random state and personality for the npc
         initState();
         initPersonality();
 
         // We're done with the sprite for now
+        sprite.placeAt(new Vector3(tileX, tileY, 0));
         sprite.undraw();
-    }
 
-    public void setUp(Vector3 homeTile, Vector3 workTile, string ID)
-    {
-        this.homeTile = homeTile;
-        this.workTile = workTile;
-        this.ID = ID;
+        // How fast the NPC moves initially
+        if (personality == "lazy")
+            movementSpeed = Random.Range(1.5f, 2.0f);
+        else
+            movementSpeed = Random.Range(0.5f, 1.0f);
     }
 
     // Places the npc at the given location
-    new public void PlaceAt(int mX, int mY, int tX, int tY, int tZ)
+    public void PlaceAt(int mX, int mY, int tX, int tY, int tZ)
     {
         Vector3 pos = new Vector3(tX, tY, tZ);
         mapX = mX;
@@ -110,19 +106,21 @@ public class NPC : MovingObject
         tileX = tX;
         tileY = tY;
         transform.position = pos;
+
         if (hasQuest)
         {
             quest.GetComponent<Transform>().position = new Vector3(tX, tY + .8f, tZ);
         }
         if (sprite != null)
             sprite.placeAt(pos);
-
-		
     }
+
+    // Instantiate a quest
     public void initQuest()
     {
         hasQuest = true;
         quest = Instantiate(map.quest) as GameObject;
+
         if(sprite != null)
         {
             PlaceAt(mapX, mapY, tileX, tileY, 0);
@@ -134,6 +132,7 @@ public class NPC : MovingObject
     public void draw()
     {
         sprite.draw();
+
         if(hasQuest)
         {
             quest.SetActive(true);
@@ -153,6 +152,13 @@ public class NPC : MovingObject
     protected override void OnCantMove<T>(T component)
     {
 
+    }
+
+    protected override bool MoveToTile(int xDir, int yDir)
+    {
+        bool moved = base.MoveToTile(xDir, yDir);
+        PlaceAt(mapX, mapY, tileX, tileY, 0);
+        return moved;
     }
 
 
@@ -184,49 +190,51 @@ public class NPC : MovingObject
         sprite.setState(personality);
     }
 
-    private void goTowardsHome()
-    {
-        int dx = (int)homeTile.x - mapX;
-        int dy = (int)homeTile.y - mapY;
-        if(dx > dy)
-        {
-            dy = 0;
-        }
-        if(dy >= dx)
-        {
-            dx = 0;
-        }
-        if (dx != 0)
-            dx = dx / (Math.Abs(dx));
-        if (dy != 0)
-            dy = dy / (Math.Abs(dy));
-        mapX += dx;
-        mapY += dy;
-        if (dx != 0 || dy != 0)
-            GameManager.logger(ID + "Entered Tile " + mapX + " " + mapY + " While Going Home at " + Time.time + "\n");
-        // AttemptMove<NPC>(dx, dy);
-    }
+    // NPC starts walking towards the given location
+    private void goTowards(Vector3 tile) {
+        int tMapX = (int)(tile.x / 10);
+        int tMapY = (int)(tile.y / 10);
+        int tTileX = (int)(tile.x % 10);
+        int tTileY = (int)(tile.y % 10);
 
-    private void goTowardsWork()
-    {
-        int dx = (int)workTile.x - mapX;
-        int dy = (int)workTile.y - mapY;
-        if (dx > dy)
-        {
-            dy = 0;
+        int mx = tMapX - mapX;
+        int my = tMapY - mapY;
+        int tx = tTileX - tileX;
+        int ty = tTileY - tileY;
+
+        // Move up or down to the next map tile
+        if (my != 0) {
+            // Walk along the road
+            if (tileX != 4 && tileX != 5) {
+                int dx = Math.Min(4 - tileX, 5 - tileX);
+                MoveToTile(dx / (Math.Abs(dx)), 0);
+            }
+            else {
+                MoveToTile(0, my / (Math.Abs(my)));
+            }
         }
-        if (dy >= dx)
-        {
-            dx = 0;
+        // Move left or right to the next map tile
+        else if (mx != 0) {
+            // Walk along the road
+            if (tileY != 4 && tileY != 5) {
+                int dy = Math.Min(4 - tileY, 5 - tileY);
+                MoveToTile(0, dy / (Math.Abs(dy)));
+            }
+            else {
+                MoveToTile(mx / (Math.Abs(mx)), 0);
+            }
         }
-        if (dx != 0)
-            dx = dx / (Math.Abs(dx));
-        if (dy != 0)
-            dy = dy / (Math.Abs(dy));
-        mapX += dx;
-        mapY += dy;
-        if (dx != 0 || dy != 0)
-            GameManager.logger(ID + "Entered Tile " + mapX + " " + mapY + " While Going To Work at " + Time.time + "\n");
-        //AttemptMove<NPC>(dx, dy);
+        // Move up or down to the next tile
+        else if (ty != 0) {
+            MoveToTile(0, ty / (Math.Abs(ty)));
+        }
+        // Move left or right to the next tile
+        else if (tx != 0) {
+            MoveToTile(tx / (Math.Abs(tx)), 0);
+        }
+        // Reached the target destination
+        else {
+            
+        }
     }
 }

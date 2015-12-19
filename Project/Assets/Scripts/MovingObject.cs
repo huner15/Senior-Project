@@ -12,6 +12,7 @@ public abstract class MovingObject : Object {
     private float inverseMoveTime;          //Used to make movement more efficient.
 
 
+
     protected virtual void Start() {
         boxCollider = GetComponent<BoxCollider2D>();
         rb2D = GetComponent<Rigidbody2D>();
@@ -19,15 +20,16 @@ public abstract class MovingObject : Object {
     }
 
     //Move returns true if it is able to move and false if not. 
-    protected bool Move(int xDir, int yDir, out RaycastHit2D hit) {
+    protected virtual bool Move(int xDir, int yDir, out RaycastHit2D hit) {
         //Calculate end position based on the direction parameters passed in when calling Move.
         Vector2 start = transform.position;
         Vector2 end = start + new Vector2(xDir, yDir);
+
         //Disable the boxCollider so that linecast doesn't hit this object's own collider.
         boxCollider.enabled = false;
+
         //Cast a line from start point to end point checking collision on blockingLayer.
         hit = Physics2D.Linecast(start, end, blockingLayer);
-        //Re-enable boxCollider after linecast
         boxCollider.enabled = true;
 
         //Check if anything was hit
@@ -36,6 +38,7 @@ public abstract class MovingObject : Object {
                 transform.position = new Vector3(tileX, tileY, 0);
                 rb2D.MovePosition(new Vector3(tileX, tileY, 0));
             }
+
             //Return true to say that Move was successful
             return true;
         }
@@ -43,7 +46,7 @@ public abstract class MovingObject : Object {
     }
 
     // Attempts to move to the tile in the given direction
-    private bool MoveToTile(int xDir, int yDir) {
+    protected virtual bool MoveToTile(int xDir, int yDir) {
         // Move to the tile to the left
         if (tileX == 0 && xDir == -1) {
             // There's an object on the other side blocking movement

@@ -124,7 +124,7 @@ public class TileManager : MonoBehaviour {
 
     // Grid information
     private Transform boardHolder;       // Reference to the transform of the tile
-    public Grid grid;                   // Possible locations to place tiles
+    public Grid grid;                    // Possible locations to place tiles
 
     // All objects on this tile
     public List<GameObject> floors = new List<GameObject>();        // prefabs for the floor
@@ -137,8 +137,166 @@ public class TileManager : MonoBehaviour {
     public List<Vector3> npcLocations = new List<Vector3>();        // location of npcs
 
 
+
+    // Tells the tile what to use as sprites
+    public void SetupSprites(GameObject road, GameObject[] outerwall, GameObject[] floor, GameObject[] building, GameObject[] wall)
+    {
+        roadTile = road;
+        outerWallTiles = outerwall;
+        floorTiles = floor;
+        buildingTiles = building;
+        wallTiles = wall;
+    }
+
+    // Initializes and lays out the tile
+    public void SetupScene(int tRow, int tCol, String type)
+    {
+        // Instantiate the tile
+        tileType = type;            // what type of tile is this?
+        tileRow = tRow;             // where is the tile on the map?
+        tileCol = tCol;
+
+        // Tile is a market; has lots of stalls and people
+        if (tileType.Equals("Market"))
+        {
+            buildingCount = new Count(1, 2);
+            wallCount = new Count(0, 0);
+            npcCount = new Count(1, 2);
+            bSizeX = 2;
+            bSizeY = 2;
+        }
+        // Tile is a town; has houses and people
+        else if (tileType.Equals("Town"))
+        {
+            buildingCount = new Count(1, 2);
+            wallCount = new Count(0, 5);
+            npcCount = new Count(1, 2);
+            bSizeX = 2;
+            bSizeY = 2;
+        }
+        // Tile is a forest; has trees and bushes
+        else if (tileType.Equals("Forest"))
+        {
+            buildingCount = new Count(0, 0);
+            wallCount = new Count(10, 30);
+            npcCount = new Count(0, 0);
+            bSizeX = 1;
+            bSizeY = 1;
+        }
+        // Tile is a cave entrance; has rocks and caves
+        else if (tileType.Equals("Cave"))
+        {
+            buildingCount = new Count(1, 1);
+            wallCount = new Count(5, 10);
+            npcCount = new Count(0, 0);
+            bSizeX = 2;
+            bSizeY = 2;
+        }
+        // Tile is a farm; has crops and animals
+        else if (tileType.Equals("Farm"))
+        {
+            buildingCount = new Count(0, 0);
+            wallCount = new Count(5, 20);
+            npcCount = new Count(0, 1);
+            bSizeX = 2;
+            bSizeY = 2;
+        }
+
+        // Creates a new grid and sets up the floor and outerwalls
+        grid = new Grid(columns, rows);
+        BoardSetup();
+
+        // Instantiates and places a random number of objects
+        LayoutObjectAtRandom(buildingTiles, buildingCount.minimum, buildingCount.maximum, bSizeX, bSizeY, buildings, buildingLocations);
+        LayoutObjectAtRandom(wallTiles, wallCount.minimum, wallCount.maximum, 1, 1, walls, wallLocations);
+        LayoutNPCs();
+    }
+
+    // Draw this tile to the screen
+    public void Draw()
+    {
+        // Draw the floor
+        for (int i = 0; i < floors.Count; i++)
+            floors[i].SetActive(true);
+        // Draw the walls
+        for (int i = 0; i < walls.Count; i++)
+            walls[i].SetActive(true);
+        // Draw the buildings
+        for (int i = 0; i < buildings.Count; i++)
+            buildings[i].SetActive(true);
+        // Draw the people
+        for (int i = 0; i < npcs.Count; i++)
+        {
+            npcs[i].SetActive(true);
+            npcs[i].GetComponent<NPC>().draw();
+        }
+    }
+
+    // Removes the tile from the screen
+    public void Undraw() {
+        // Undraw the floor
+        for (int i = 0; i < floors.Count; i++)
+            floors[i].SetActive(false);
+        // Undraw the walls
+        for (int i = 0; i < walls.Count; i++)
+            walls[i].SetActive(false);
+        // Undraw the buildings
+        for (int i = 0; i < buildings.Count; i++)
+            buildings[i].SetActive(false);
+        // Undraw the people
+        for (int i = 0; i < npcs.Count; i++) {
+            npcs[i].SetActive(false);
+            npcs[i].GetComponent<NPC>().undraw();
+        }
+    }
+
+    // Finds and returns a random empty location on this tile, if there is one
+    public Vector3 EmptyLocation()
+    {
+        Vector3 emptyLoc;
+
+        if (grid.count() == 0)
+            emptyLoc = new Vector3(-1, -1, -1);
+        else
+        {
+            int index = Random.Range(0, grid.count());
+            emptyLoc = grid.gridPositions[index];
+            grid.removeAt(index);
+        }
+        return emptyLoc;
+    }
+
+    // Is there an impassable object at this location?
+    public Boolean ObjectAt(int x, int y)
+    {
+        // There's a building here
+        if (grid.findTile(buildingLocations, x, y) != -1)
+            return true;
+        // There's a wall here
+        if (grid.findTile(wallLocations, x, y) != -1)
+            return true;
+        // There's an NPC here
+        if (grid.findTile(npcLocations, x, y) != -1)
+            return true;
+
+        // There was nothing there
+        return false;
+    }
+
+    //
+    public void ClearNpcs() {
+        for (int i = 0; i < npcs.Count; i++) {
+            npcs[i].SetActive(false);
+            npcs[i].GetComponent<NPC>().undraw();
+            npcs.RemoveAt(i);
+            npcLocations.RemoveAt(i);
+        }
+    }
+
+
+
     // Sets up the walls, exits and floor of the tile
-    void BoardSetup() {
+    private void BoardSetup() {
         boardHolder = new GameObject("Board " + tileRow + " " + tileCol).transform;
 
         for (int x = 0; x < columns; x++) {
@@ -167,7 +325,7 @@ public class TileManager : MonoBehaviour {
     }
 
     // Takes in an array of game objects and randomly places them on the map
-    void LayoutObjectAtRandom(GameObject[] tileArray, int min, int max, int sizeX, int sizeY, List<GameObject> objs, List<Vector3> pos) {
+    private void LayoutObjectAtRandom(GameObject[] tileArray, int min, int max, int sizeX, int sizeY, List<GameObject> objs, List<Vector3> pos) {
         int objectCount = Random.Range(min, max + 1);
 
         // Nothing can be placed on the current tile
@@ -189,155 +347,19 @@ public class TileManager : MonoBehaviour {
     }
 
     // Places NPCs randomly on the map
-    void LayoutNPCs() {
+    private void LayoutNPCs() {
         int objectCount = Random.Range(npcCount.minimum, npcCount.maximum + 1);
-
-        // Nothing can be placed on the current tile
-        if (grid.count() == 0)
-            return;
 
         for (int i = 0; i < objectCount; i++) {
             Vector3 randomPosition = grid.RandomPosition(1, 1);
             randomPosition.z = 10 - randomPosition.y;
             GameObject instance = Instantiate(npc, randomPosition, Quaternion.identity) as GameObject;
             instance.transform.SetParent(boardHolder);
-            instance.GetComponent<NPC>().init();
             instance.GetComponent<NPC>().PlaceAt(tileCol, tileRow, (int)randomPosition.x, (int)randomPosition.y, (int)randomPosition.z);
             instance.SetActive(false);
             
             npcs.Add(instance);
             npcLocations.Add(randomPosition);
         }
-    }
-
-
-    // Tells the tile what to use as sprites
-    public void SetupSprites(GameObject road, GameObject[] outerwall, GameObject[] floor, GameObject[] building, GameObject[] wall) {
-        roadTile = road;
-        outerWallTiles = outerwall;
-        floorTiles = floor;
-        buildingTiles = building;
-        wallTiles = wall;
-    }
-
-    // Initializes and lays out the tile
-    public void SetupScene(int tRow, int tCol, String type) {
-        // Instantiate the tile
-        tileType = type;            // what type of tile is this?
-        tileRow = tRow;             // where is the tile on the map?
-        tileCol = tCol;
-
-        // Tile is a market; has lots of stalls and people
-        if (tileType.Equals("Market")) {
-            buildingCount = new Count(1, 2);
-            wallCount = new Count(0, 0);
-            npcCount = new Count(1, 2);
-            bSizeX = 2;
-            bSizeY = 2;
-        }
-        // Tile is a town; has houses and people
-        else if (tileType.Equals("Town")) {
-            buildingCount = new Count(1, 2);
-            wallCount = new Count(0, 5);
-            npcCount = new Count(1, 2);
-            bSizeX = 2;
-            bSizeY = 2;
-        }
-        // Tile is a forest; has trees and bushes
-        else if (tileType.Equals("Forest")) {
-            buildingCount = new Count(0, 0);
-            wallCount = new Count(10, 30);
-            npcCount = new Count(0, 0);
-            bSizeX = 1;
-            bSizeY = 1;
-        }
-        // Tile is a cave entrance; has rocks and caves
-        else if (tileType.Equals("Cave")) {
-            buildingCount = new Count(1, 1);
-            wallCount = new Count(5, 10);
-            npcCount = new Count(0, 0);
-            bSizeX = 2;
-            bSizeY = 2;
-        }
-        // Tile is a farm; has crops and animals
-        else if (tileType.Equals("Farm")) {
-            buildingCount = new Count(0, 0);
-            wallCount = new Count(5, 20);
-            npcCount = new Count(0, 1);
-            bSizeX = 2;
-            bSizeY = 2;
-        }
-        
-        // Creates a new grid and sets up the floor and outerwalls
-        grid = new Grid(columns, rows);
-        BoardSetup();
-
-        // Instantiates and places a random number of objects
-        LayoutObjectAtRandom(buildingTiles, buildingCount.minimum, buildingCount.maximum, bSizeX, bSizeY, buildings, buildingLocations);
-        LayoutObjectAtRandom(wallTiles, wallCount.minimum, wallCount.maximum, 1, 1, walls, wallLocations);
-        LayoutNPCs();
-    }
-
-    // Draw this tile to the screen
-    public void Draw() {
-        // Draw the floor
-        for (int i = 0; i < floors.Count; i++)
-            floors[i].SetActive(true);
-        // Draw the walls
-        for (int i = 0; i < walls.Count; i++)
-            walls[i].SetActive(true);
-        // Draw the buildings
-        for (int i = 0; i < buildings.Count; i++)
-            buildings[i].SetActive(true);
-        // Draw the people
-        for (int i = 0; i < npcs.Count; i++) {
-            npcs[i].SetActive(true);
-            npcs[i].GetComponent<NPC>().draw();
-        }
-    }
-
-    // Removes the tile from the screen
-    public void Undraw() {
-        // Undraw the floor
-        for (int i = 0; i < floors.Count; i++)
-            floors[i].SetActive(false);
-        // Undraw the walls
-        for (int i = 0; i < walls.Count; i++)
-            walls[i].SetActive(false);
-        // Undraw the buildings
-        for (int i = 0; i < buildings.Count; i++)
-            buildings[i].SetActive(false);
-        // Undraw the people
-        for (int i = 0; i < npcs.Count; i++) {
-            npcs[i].SetActive(false);
-            npcs[i].GetComponent<NPC>().undraw();
-        }
-    }
-
-    // Finds and returns a random empty location on this tile, if there is one
-    public Vector3 EmptyLocation() {
-        Vector3 emptyLoc;
-
-        if (grid.count() == 0)
-            emptyLoc = new Vector3(-1, -1, -1);
-        else {
-            int index = Random.Range(0, grid.count());
-            emptyLoc = grid.gridPositions[index];
-            grid.removeAt(index);
-        }
-        return emptyLoc;
-    }
-
-    // Is there an impassable object at this location?
-    public Boolean ObjectAt(int x, int y) {
-        // There's a building here
-        if (grid.findTile(buildingLocations, x, y) != -1)
-            return true;
-        // There's a wall here
-        if (grid.findTile(wallLocations, x, y) != -1)
-            return true;
-
-        // There was nothing there
-        return false;
     }
 }
