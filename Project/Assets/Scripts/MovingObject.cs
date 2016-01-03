@@ -2,7 +2,8 @@
 using System.Collections;
 
 //The abstract keyword enables you to create classes and class members that are incomplete and must be implemented in a derived class.
-public abstract class MovingObject : Object {
+public abstract class MovingObject : Object
+{
     public MapManager map;                  // reference to the map
     public float moveTime = 0.1f;           //Frames it will take object to move
     public LayerMask blockingLayer;         //Layer on which collision will be checked.
@@ -13,14 +14,16 @@ public abstract class MovingObject : Object {
 
 
 
-    protected virtual void Start() {
+    protected virtual void Start()
+    {
         boxCollider = GetComponent<BoxCollider2D>();
         rb2D = GetComponent<Rigidbody2D>();
         inverseMoveTime = 1f / moveTime;
     }
 
     //Move returns true if it is able to move and false if not. 
-    protected virtual bool Move(int xDir, int yDir, out RaycastHit2D hit) {
+    protected virtual bool Move(int xDir, int yDir, out RaycastHit2D hit)
+    {
         //Calculate end position based on the direction parameters passed in when calling Move.
         Vector2 start = transform.position;
         Vector2 end = start + new Vector2(xDir, yDir);
@@ -33,8 +36,10 @@ public abstract class MovingObject : Object {
         boxCollider.enabled = true;
 
         //Check if anything was hit
-        if (hit.transform == null) {
-            if (MoveToTile(xDir, yDir)) {
+        if (hit.transform == null)
+        {
+            if (MoveToTile(xDir, yDir))
+            {
                 transform.position = new Vector3(tileX, tileY, 0);
                 rb2D.MovePosition(new Vector3(tileX, tileY, 0));
             }
@@ -46,57 +51,67 @@ public abstract class MovingObject : Object {
     }
 
     // Attempts to move to the tile in the given direction
-    protected virtual bool MoveToTile(int xDir, int yDir) {
-        // Move to the tile to the left
-        if (tileX == 0 && xDir == -1) {
+    protected virtual bool MoveToTile(int xDir, int yDir)
+    {
+        // Move to the map to the left
+        if (tileX == 0 && xDir == -1)
+        {
             // There's an object on the other side blocking movement
             if (map.map[mapX - 1][mapY].ObjectAt(9, tileY))
                 return false;
             // Move onto the tile next to us
-            else {
+            else
+            {
                 tileX = 9;
                 mapX -= 1;
                 return true;
             }
         }
-        // Move to the tile to the right
-        else if (tileX == 9 && xDir == 1) {
+        // Move to the map to the right
+        else if (tileX == 9 && xDir == 1)
+        {
             // There's an object on the other side blocking movement
             if (map.map[mapX + 1][mapY].ObjectAt(0, tileY))
                 return false;
             // Move onto the tile next to us
-            else {
+            else
+            {
                 tileX = 0;
                 mapX += 1;
                 return true;
             }
         }
-        // Move to the tile below
-        else if (tileY == 0 && yDir == -1) {
+        // Move to the map below
+        else if (tileY == 0 && yDir == -1)
+        {
             // There's an object on the other side blocking movement
             if (map.map[mapX][mapY - 1].ObjectAt(tileX, 9))
                 return false;
             // Move onto the tile next to us
-            else {
+            else
+            {
                 tileY = 9;
                 mapY -= 1;
                 return true;
             }
         }
-        // Move to the tile above
-        else if (tileY == 9 && yDir == 1) {
+        // Move to the map above
+        else if (tileY == 9 && yDir == 1)
+        {
             // There's an object on the other side blocking movement
             if (map.map[mapX][mapY + 1].ObjectAt(tileX, 0))
                 return false;
             // Move onto the tile next to us
-            else {
+            else
+            {
                 tileY = 0;
                 mapY += 1;
                 return true;
             }
         }
         // Nothing was hit
-        else {
+        else
+        {
             tileX += xDir;
             tileY += yDir;
             return true;
@@ -105,7 +120,8 @@ public abstract class MovingObject : Object {
 
     //AttemptMove takes a generic parameter T to specify the type of component we expect our unit to interact with if blocked (Player for Enemies, Wall for Player).
     protected virtual void AttemptMove<T>(int xDir, int yDir)
-        where T : Component {
+        where T : Component
+    {
         //Hit will store whatever our linecast hits when Move is called.
         RaycastHit2D hit;
         bool canMove = Move(xDir, yDir, out hit);

@@ -3,7 +3,8 @@ using System;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour
+{
     public static GameManager instance = null;
     public GameObject player;
     public GameObject map;
@@ -30,7 +31,8 @@ public class GameManager : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Awake () {
+    void Awake()
+    {
         // Check if GameManager instance already exists
         if (instance == null)
             instance = this;
@@ -40,10 +42,11 @@ public class GameManager : MonoBehaviour {
         // Don't destroy when reloading scene
         DontDestroyOnLoad(gameObject);
         InitGame();
-	}
+    }
 
     // Initializes the game
-    void InitGame() {
+    void InitGame()
+    {
         // Create the map
         map = Instantiate(map, new Vector3(5.5f, 5.5f, 0), Quaternion.identity) as GameObject;
         mapManager = map.GetComponent<MapManager>();

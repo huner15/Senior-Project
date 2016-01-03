@@ -9,20 +9,25 @@ public enum timeOfDay
     morning, evening, night
 }
 
-public class NPC : MovingObject {
+public class NPC : MovingObject
+{
     // Sprite representing this NPC
     private npcSprite sprite;
+    public GameObject quest;
 
     // States this npc currently has
+    public string name;
+    public string personality;
+    public List<string> states = new List<string>();
     public Boolean hasQuest = false;
-    public GameObject quest;
-    private string name;
-    private string personality;
-    private List<string> states = new List<string>();
+    public Boolean atWork = false;
+    public Boolean atHome = false;
 
     // Places this npc goes
-    private Building home, work;
-    private Vector3 homeTile, workTile;
+    public Building home, work;
+    public Vector3 homeTile, workTile;
+    int workTimeStart, workTimeEnd;
+    int sleepTimeStart, sleepTimeEnd;
 
     // Movement stuff
     int ID; // npc's id on the map
@@ -31,6 +36,9 @@ public class NPC : MovingObject {
     private float movementSpeed;
     int timeOfDayLength = 1; // in minutes
     timeOfDay currentTime;
+
+    // References
+    public Player player;
 
 
 
@@ -44,27 +52,40 @@ public class NPC : MovingObject {
     }
 
     // Update is called once per frame
-    public void Update() {
+    public void Update()
+    {
         // NPC goes to work
-        if (currentTime == timeOfDay.morning && Time.time - timeloc > movementSpeed) {
-            goTowards(workTile);
+        if (currentTime == timeOfDay.morning && Time.time - timeloc > movementSpeed)
+        {
+            if (goTowards(workTile))
+            {
+                // enter work
+            }
             timeloc = Time.time;
         }
         // NPC goes home
-        if (currentTime == timeOfDay.evening && Time.time - timeloc > movementSpeed) {
-            goTowards(homeTile);
+        if (currentTime == timeOfDay.evening && Time.time - timeloc > movementSpeed)
+        {
+            if (goTowards(homeTile))
+            {
+                // enter home
+            }
             timeloc = Time.time;
         }
-        // Michael what is this doing?
-        if (Time.time - time > timeOfDayLength * 60) {
+        // 
+        if (Time.time - time > timeOfDayLength * 60)
+        {
             time = Time.time;
-            if (currentTime == timeOfDay.morning) {
+            if (currentTime == timeOfDay.morning)
+            {
                 currentTime = timeOfDay.evening;
             }
-            else if (currentTime == timeOfDay.evening) {
+            else if (currentTime == timeOfDay.evening)
+            {
                 currentTime = timeOfDay.night;
             }
-            else {
+            else
+            {
                 currentTime = timeOfDay.morning;
             }
         }
@@ -119,9 +140,9 @@ public class NPC : MovingObject {
     public void initQuest()
     {
         hasQuest = true;
-        quest = Instantiate(map.quest) as GameObject;
+        quest = Instantiate(quest) as GameObject;
 
-        if(sprite != null)
+        if (sprite != null)
         {
             PlaceAt(mapX, mapY, tileX, tileY, 0);
             quest.SetActive(false);
@@ -133,7 +154,7 @@ public class NPC : MovingObject {
     {
         sprite.draw();
 
-        if(hasQuest)
+        if (hasQuest)
         {
             quest.SetActive(true);
         }
@@ -143,21 +164,59 @@ public class NPC : MovingObject {
     public void undraw()
     {
         sprite.undraw();
-        if(hasQuest)
+
+        if (hasQuest)
         {
             quest.SetActive(false);
         }
     }
 
+
+
+    // Called when the object cannot move
     protected override void OnCantMove<T>(T component)
     {
 
     }
 
+    // Attempts to move to the given tile
     protected override bool MoveToTile(int xDir, int yDir)
     {
-        bool moved = base.MoveToTile(xDir, yDir);
-        PlaceAt(mapX, mapY, tileX, tileY, 0);
+        bool moved;
+        int pMapX = map.player.mapX;
+        int pMapY = map.player.mapY;
+        int pTileX = map.player.tileX;
+        int pTileY = map.player.tileY;
+
+        // Collision checking
+        if (pTileX == tileX + xDir && pTileY == tileY + yDir)
+        {
+            // On the same map
+            if (pMapY == mapY && pMapX == mapX)
+            {
+                moved = false;
+            }
+            // Heading to a different map
+            else if ( (tileX == 0 && xDir == -1 && mapX - 1 == pMapX && mapY == pMapY) || // map left
+                 (tileX == 9 && xDir == 1 && mapX + 1 == pMapX && mapY == pMapY) ||  // map right
+                 (tileY == 0 && yDir == -1 && mapY - 1 == pMapY && mapX == pMapX) || // map below
+                 (tileY == 9 && yDir == 1 && mapY + 1 == pMapY && mapX == pMapX) )   // map above
+            {
+                moved = false;
+            }
+            // No collision
+            else
+            {
+                moved = base.MoveToTile(xDir, yDir);
+                PlaceAt(mapX, mapY, tileX, tileY, 0);
+            }
+        }
+        else
+        {
+            moved = base.MoveToTile(xDir, yDir);
+            PlaceAt(mapX, mapY, tileX, tileY, 0);
+        }
+
         return moved;
     }
 
@@ -191,50 +250,67 @@ public class NPC : MovingObject {
     }
 
     // NPC starts walking towards the given location
-    private void goTowards(Vector3 tile) {
+    private bool goTowards(Vector3 tile)
+    {
+        // Returns true if the NPC has reached the location
+        bool reachedDestination = false;
+
+        // location of the tile on the map
         int tMapX = (int)(tile.x / 10);
         int tMapY = (int)(tile.y / 10);
         int tTileX = (int)(tile.x % 10);
         int tTileY = (int)(tile.y % 10);
 
+        // delta x and y of the npc tile and the destination tile
         int mx = tMapX - mapX;
         int my = tMapY - mapY;
         int tx = tTileX - tileX;
         int ty = tTileY - tileY;
 
         // Move up or down to the next map tile
-        if (my != 0) {
+        if (my != 0)
+        {
             // Walk along the road
-            if (tileX != 4 && tileX != 5) {
+            if (tileX != 4 && tileX != 5)
+            {
                 int dx = Math.Min(4 - tileX, 5 - tileX);
                 MoveToTile(dx / (Math.Abs(dx)), 0);
             }
-            else {
+            else
+            {
                 MoveToTile(0, my / (Math.Abs(my)));
             }
         }
         // Move left or right to the next map tile
-        else if (mx != 0) {
+        else if (mx != 0)
+        {
             // Walk along the road
-            if (tileY != 4 && tileY != 5) {
+            if (tileY != 4 && tileY != 5)
+            {
                 int dy = Math.Min(4 - tileY, 5 - tileY);
                 MoveToTile(0, dy / (Math.Abs(dy)));
             }
-            else {
+            else
+            {
                 MoveToTile(mx / (Math.Abs(mx)), 0);
             }
         }
         // Move up or down to the next tile
-        else if (ty != 0) {
+        else if (ty != 0)
+        {
             MoveToTile(0, ty / (Math.Abs(ty)));
         }
         // Move left or right to the next tile
-        else if (tx != 0) {
+        else if (tx != 0)
+        {
             MoveToTile(tx / (Math.Abs(tx)), 0);
         }
         // Reached the target destination
-        else {
-            
+        else
+        {
+            reachedDestination = true;
         }
+
+        return reachedDestination;
     }
 }
