@@ -14,6 +14,7 @@ public abstract class MovingObject : Object
 
 
 
+    // Sets up the initial physics stuff
     protected virtual void Start()
     {
         boxCollider = GetComponent<BoxCollider2D>();

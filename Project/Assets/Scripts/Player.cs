@@ -1,13 +1,28 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 using Random = UnityEngine.Random;
+using System;
 
 public class Player : MovingObject
 {
+    // Player stats
+    public int money = 0;
+    public List<Item> inventory = new List<Item>();
+
     // Tells player if it is in contact with something
-    bool touchingBuilding;
-    bool touchingObject;
-    bool touchingNPC;
+    public bool touchingBuilding;
+    public bool touchingObject;
+    public bool touchingNPC;
+
+    // Tells player if it is inside a building or a market
+    public bool insideBuilding;
+    public bool insideMarket;
+
+    // The thing the player is in contact with
+    private GameObject touching;
+
+
 
     // Use this for initialization
     void Start()
@@ -18,6 +33,31 @@ public class Player : MovingObject
     // Update is called once per frame
     void Update()
     {
+        // Player is currently inside a market
+        if (insideMarket == true)
+        {
+            Building building = touching.GetComponent<Building>();
+
+            // Exit the market place
+            if (Input.GetKeyDown(KeyCode.X))
+                building.Exit();
+
+            // Player is trying to buy something
+            else if (Event.current.type == EventType.KeyDown)
+            {
+                int num = Event.current.keyCode - KeyCode.Alpha1 + 1;
+
+                if (num >= 0 && num <= 9)
+                {
+                    if (building.BuyGood(num))
+                        print("You bought the " + inventory[inventory.Count - 1].name);
+                    else
+                        print("You tried to buy something but failed miserably.");
+                }
+            }
+            return;
+        }
+
         // Move left
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
@@ -47,6 +87,12 @@ public class Player : MovingObject
         {
             if (tryToInteract())
             {
+                // Enter a building
+                if (touchingBuilding)
+                {
+                    Building building = touching.GetComponent<Building>();
+                    building.Enter();
+                }
                 print("Successful Interaction");
             }
             else
@@ -97,7 +143,6 @@ public class Player : MovingObject
         // Try to move in the direction of the input
         base.AttemptMove<T>(xDir, yDir);
 
-
         // Draw the new tile we're on
         map.Undraw(oldX, oldY);
         map.Draw(mapX, mapY);
@@ -116,12 +161,17 @@ public class Player : MovingObject
         {
             print("Hit a building");
             touchingBuilding = true;
+            touching = other.gameObject;
+            Building building = touching.GetComponent<Building>();
+
+            print("Press z to enter " + building.name);
         }
         // We collided with an npc
         else if (other.tag == "NPC")
         {
             print("Walked into an NPC");
             touchingNPC = true;
+            touching = other.gameObject;
         }
     }
 }

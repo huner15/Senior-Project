@@ -11,6 +11,7 @@ public class MapManager : MonoBehaviour
     private int townSize = 7;       // size of the town
 
     // Map information
+    public string season;           // current season
     private int numCave;            // # of caves on this map
     private int numMarket;          // # of markets in the town
     private int numFarm;            // # of farms on this map
@@ -21,10 +22,10 @@ public class MapManager : MonoBehaviour
     public Player player;
 
     // Prefab objects
-    public GameObject[] caveInOuterWall, caveOutOuterWall, forestOuterWall, townOuterWall, marketOuterWall, farmOuterWall;
-    public GameObject[] caveInWalls, caveOutWalls, forestWalls, townWalls, marketWalls, farmWalls;
-    public GameObject[] caveInFloors, caveOutFloors, forestFloors, townFloors, marketFloors, farmFloors;
-    public GameObject[] caveInBuildings, caveOutBuildings, forestBuildings, townBuildings, marketBuildings, farmBuildings;
+    public GameObject[] caveOutOuterWall, forestOuterWall, townOuterWall, marketOuterWall, farmOuterWall;
+    public GameObject[] caveOutWalls, forestWalls, townWalls, marketWalls, farmWalls;
+    public GameObject[] caveOutFloors, forestFloors, townFloors, marketFloors, farmFloors;
+    public GameObject[] caveOutBuildings, forestBuildings, townBuildings, marketBuildings, farmBuildings;
 
     // Grid information
     private Grid grid;
@@ -34,11 +35,10 @@ public class MapManager : MonoBehaviour
     public List<Vector3> homeLocs = new List<Vector3>();            // List of all home locations (xy: x = map, y = tile)
     public List<GameObject> npcs = new List<GameObject>();          // List of all NPCs on all tiles
     public List<Vector3> npcLocs = new List<Vector3>();             // List of all NPC locations
-    public List<GameObject> buildings = new List<GameObject>();     // List of all buildings on all tiles
-    public List<Vector3> buildingLocations = new List<Vector3>();   // List of all buildings locations (xy where x = map, y = tile)
 
 
 
+    // Called every game loop
     void Update()
     {
         // Clear the previous npc locations on the tiles
@@ -73,9 +73,12 @@ public class MapManager : MonoBehaviour
     // Sets up the map
     public void SetupScene()
     {
+        string[] seasons = { "winter", "spring", "summer", "fall" };
+        season = seasons[Random.Range(0, 4)];
+
         numCave = Random.Range(1, 3);       // 1 to 2 caves
-        numMarket = Random.Range(3, 6);     // 3 to 5 markets
-        numFarm = Random.Range(5, 8);       // 5 to 7 farms
+        numMarket = Random.Range(7, 11);    // 7 to 10 markets
+        numFarm = Random.Range(7, 10);      // 7 to 10 farms
         tileManager = GetComponent<TileManager>();
 
         grid = new Grid(columns, rows);
@@ -197,6 +200,8 @@ public class MapManager : MonoBehaviour
         {
             for (int y = 0; y < rows; y++)
             {
+                map[x][y].map = this;
+
                 // Market
                 if (grid.findTile(markets, x, y) != -1)
                 {
@@ -234,18 +239,31 @@ public class MapManager : MonoBehaviour
     // Sets up the NPCs
     private void SetupNPCs()
     {
-        List<Vector3> tempBuildings = new List<Vector3>(buildingLocations);
-
         // Give each of the NPCs a home and a workplace
         for (int i = 0; i < npcs.Count; i++)
         {
+            // Choose a random house and workplace
             NPC character = npcs[i].GetComponent<NPC>();
-            int homeLoc = Random.Range(0, tempBuildings.Count);
-            int workLoc = Random.Range(0, tempBuildings.Count);
-            Vector3 home = tempBuildings[homeLoc];
-            Vector3 work = tempBuildings[workLoc];
-            character.init(home, work, i);
+            int homeLoc = Random.Range(0, homeLocs.Count);
+            int workLoc = Random.Range(0, workLocs.Count);
+            Vector3 home = homeLocs[homeLoc];
+            Vector3 work = workLocs[workLoc];
+            Building homeBldg = homeBldgs[homeLoc].GetComponent<Building>();
+            Building workBldg = workBldgs[workLoc].GetComponent<Building>();
+
+            // Workplace is already occupied, choose another one
+            while (workBldg.type == "market" && workBldg.owners.Count != 0)
+            {
+                workLoc = Random.Range(0, workLocs.Count);
+                work = workLocs[workLoc];
+                workBldg = workBldgs[workLoc].GetComponent<Building>();
+            }
+
+            // Initialize the NPC
+            character.home = homeBldg;
+            character.work = workBldg;
             character.map = this;
+            character.init(home, work, i);
         }
         for (int x = 0; x < Random.Range(5, 10); x++)
         {
@@ -264,8 +282,37 @@ public class MapManager : MonoBehaviour
                 for (int i = 0; i < map[x][y].buildings.Count; i++)
                 {
                     Vector3 loc = map[x][y].buildingLocations[i];
-                    buildingLocations.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
-                    buildings.Add(map[x][y].buildings[i]);
+                    Building building = map[x][y].buildings[i].GetComponent<Building>();
+                    building.map = this;
+
+                    // Market place; buildings are stalls
+                    if (map[x][y].tileType == "Market")
+                    {
+                        building.SetUp(map[x][y], "market");
+                        workLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
+                        workBldgs.Add(map[x][y].buildings[i]);
+                    }
+                    // Town; buildings are homes
+                    if (map[x][y].tileType == "Town")
+                    {
+                        building.SetUp(map[x][y], "home");
+                        homeLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
+                        homeBldgs.Add(map[x][y].buildings[i]);
+                    }
+                    // Caves are workplaces (miners)
+                    if (map[x][y].tileType == "Cave")
+                    {
+                        building.SetUp(map[x][y], "cave");
+                        workLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
+                        workBldgs.Add(map[x][y].buildings[i]);
+                    }
+                    // Farms are workplaces
+                    if (map[x][y].tileType == "Farm")
+                    {
+                        building.SetUp(map[x][y], "barn");
+                        workLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
+                        workBldgs.Add(map[x][y].buildings[i]);
+                    }
                 }
                 // Find all the NPCs
                 for (int i = 0; i < map[x][y].npcs.Count; i++)

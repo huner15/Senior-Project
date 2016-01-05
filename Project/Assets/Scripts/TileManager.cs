@@ -123,7 +123,7 @@ public class TileManager : MonoBehaviour
     private int rows = 10;          // # of rows in a tile
 
     // Tile information
-    private String tileType;        // the type of tile this is
+    public String tileType;        // the type of tile this is
     private int tileRow, tileCol;   // location of this tile on the map
     private int bSizeX, bSizeY;     // size of buildings on this tile
     private Count buildingCount;    // # of buildings that can spawn on this tile
@@ -151,6 +151,9 @@ public class TileManager : MonoBehaviour
     public List<GameObject> npcs = new List<GameObject>();          // prefabs for the npcs
     public List<Vector3> npcLocations = new List<Vector3>();        // location of npcs
 
+    // Outside references
+    public MapManager map;
+
 
 
     // Tells the tile what to use as sprites
@@ -173,7 +176,7 @@ public class TileManager : MonoBehaviour
         // Tile is a market; has lots of stalls and people
         if (tileType.Equals("Market"))
         {
-            buildingCount = new Count(1, 2);
+            buildingCount = new Count(2, 3);    // stalls
             wallCount = new Count(0, 0);
             npcCount = new Count(1, 2);
             bSizeX = 2;
@@ -182,8 +185,8 @@ public class TileManager : MonoBehaviour
         // Tile is a town; has houses and people
         else if (tileType.Equals("Town"))
         {
-            buildingCount = new Count(1, 2);
-            wallCount = new Count(0, 5);
+            buildingCount = new Count(1, 2);    // houses
+            wallCount = new Count(0, 5);        // fences
             npcCount = new Count(1, 2);
             bSizeX = 2;
             bSizeY = 2;
@@ -191,8 +194,8 @@ public class TileManager : MonoBehaviour
         // Tile is a forest; has trees and bushes
         else if (tileType.Equals("Forest"))
         {
-            buildingCount = new Count(0, 0);
-            wallCount = new Count(10, 30);
+            buildingCount = new Count(0, 0);    // mushrooms and flowers
+            wallCount = new Count(10, 30);      // trees
             npcCount = new Count(0, 0);
             bSizeX = 1;
             bSizeY = 1;
@@ -200,8 +203,8 @@ public class TileManager : MonoBehaviour
         // Tile is a cave entrance; has rocks and caves
         else if (tileType.Equals("Cave"))
         {
-            buildingCount = new Count(1, 1);
-            wallCount = new Count(5, 10);
+            buildingCount = new Count(1, 1);    // cave entrance
+            wallCount = new Count(5, 10);       // rocks
             npcCount = new Count(0, 0);
             bSizeX = 2;
             bSizeY = 2;
@@ -209,11 +212,44 @@ public class TileManager : MonoBehaviour
         // Tile is a farm; has crops and animals
         else if (tileType.Equals("Farm"))
         {
-            buildingCount = new Count(0, 0);
-            wallCount = new Count(5, 20);
-            npcCount = new Count(0, 1);
+            buildingCount = new Count(1, 2);    // farm house
+            wallCount = new Count(5, 10);       // crops
+            npcCount = new Count(0, 0);
             bSizeX = 2;
             bSizeY = 2;
+        }
+        // Tile is a home; has beds and dressers
+        else if (tileType.Equals("Home"))
+        {
+            buildingCount = new Count(1, 3);    // beds
+            wallCount = new Count(5, 10);       // home objects
+            npcCount = new Count(0, 0);
+            bSizeX = 1;
+            bSizeY = 1;
+        }
+        else if (tileType.Equals("Barn"))
+        {
+            buildingCount = new Count(2, 4);    // animals
+            wallCount = new Count(5, 10);       // hay and stuff
+            npcCount = new Count(0, 0);
+            bSizeX = 1;
+            bSizeY = 1;
+        }
+        else if (tileType.Equals("Cavern"))
+        {
+            buildingCount = new Count(0, 2);    // precious gems
+            wallCount = new Count(20, 30);      // rocks
+            npcCount = new Count(0, 0);
+            bSizeX = 1;
+            bSizeY = 1;
+        }
+        else if (tileType.Equals("Inn"))
+        {
+            buildingCount = new Count(5, 10);   // beds
+            wallCount = new Count(1, 3);        // home objects
+            npcCount = new Count(0, 0);
+            bSizeX = 1;
+            bSizeY = 1;
         }
 
         // Creates a new grid and sets up the floor and outerwalls
@@ -299,7 +335,7 @@ public class TileManager : MonoBehaviour
         return false;
     }
 
-    //
+    // Removes all the NPCs from the map
     public void ClearNpcs()
     {
         for (int i = 0; i < npcs.Count; i++)
@@ -316,6 +352,7 @@ public class TileManager : MonoBehaviour
     // Sets up the walls, exits and floor of the tile
     private void BoardSetup()
     {
+        bool rotate = false;
         boardHolder = new GameObject("Board " + tileRow + " " + tileCol).transform;
 
         for (int x = 0; x < columns; x++)
@@ -323,12 +360,13 @@ public class TileManager : MonoBehaviour
             for (int y = 0; y < rows; y++)
             {
                 // Create a random floor tile
-                GameObject toInstantiate = floorTiles[Random.Range(0, floorTiles.Length)];
+                GameObject toInstantiate = Instantiate(floorTiles[Random.Range(0, floorTiles.Length)]);
 
                 // Edge of the map; create an impassable wall
                 if ((x == 0 && tileCol == 0) || (x == (columns - 1) && tileCol == (columns - 1)) || (y == 0 && tileRow == 0) || (y == (rows - 1) && tileRow == (rows - 1)))
                 {
                     toInstantiate = outerWallTiles[Random.Range(0, outerWallTiles.Length)];
+                    rotate = true;
                     grid.removeTile(x, y);
                 }
                 // Roads; don't allow anything to go here
@@ -339,6 +377,15 @@ public class TileManager : MonoBehaviour
 
                 // Add the tile to the game
                 GameObject instance = Instantiate(toInstantiate, new Vector3(x, y, 0f), Quaternion.identity) as GameObject;
+                if (rotate)
+                {
+                    if (tileCol == 0 && x == 0)
+                        instance.transform.Rotate(Vector3.forward * -90);
+                    else if (tileCol == columns - 1 && x == columns - 1)
+                        instance.transform.Rotate(Vector3.forward * 90);
+                    else if (tileRow == rows - 1 && y == rows - 1)
+                        instance.transform.Rotate(Vector3.forward * 180);
+                }
                 instance.transform.SetParent(boardHolder);
                 instance.SetActive(false);
                 floors.Add(instance);

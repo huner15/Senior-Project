@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using Random = UnityEngine.Random;
 
-public class npcSprite : MonoBehaviour {
+public class npcSprite : MonoBehaviour
+{
     // Defines the different pieces that an NPC's sprite can be constructed of
     public GameObject[] _outline;
     public GameObject[] _hair;
@@ -39,16 +40,18 @@ public class npcSprite : MonoBehaviour {
     private List<GameObject> extras = new List<GameObject>();   // Defines the extra pieces this NPC is carrying
     private GameObject mouth, eyes;                             // Defines the dynamic pieces that this NPC is made of
 
-    
+
 
     // Returns a random color
-    private Color randomColorPicker() {
+    private Color randomColorPicker()
+    {
         Color color = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
         return color;
     }
 
     // Returns a random skintone
-    private Color skinColorPicker() {
+    private Color skinColorPicker()
+    {
         int skinType = Random.Range(0, 3);
 
         // Peach
@@ -63,7 +66,8 @@ public class npcSprite : MonoBehaviour {
     }
 
     // Define how the npc's sprite will look
-    private void initSprite() {
+    private void initSprite()
+    {
         // Mouth
         int mouthType = (spriteType * _typesMouths) + _neutral;
         mouth = Instantiate(_mouth[mouthType]) as GameObject;
@@ -97,9 +101,11 @@ public class npcSprite : MonoBehaviour {
     }
 
     // Define if and what the sprite's extra features will be
-    private void initExtras() {
+    private void initExtras()
+    {
         // Hat (30% chance)
-        if (Random.Range(0, 10) <= 2) {
+        if (Random.Range(0, 10) <= 2)
+        {
             int type = (_typesPeople * _hat1) + spriteType;
             GameObject hat = Instantiate(_extra[type], new Vector3(0f, 0f, 10f), Quaternion.identity) as GameObject;
             hat.GetComponent<SpriteRenderer>().color = randomColorPicker();
@@ -109,13 +115,15 @@ public class npcSprite : MonoBehaviour {
 
 
     // Create the initial NPC sprite
-    public void init() {
+    public void init()
+    {
         spriteType = Random.Range(0, _typesPeople);
         initSprite();
     }
 
     // Draws the NPC to the screen
-    public void draw() {
+    public void draw()
+    {
         mouth.SetActive(true);
         eyes.SetActive(true);
         for (int i = 0; i < extras.Count; i++)
@@ -125,7 +133,8 @@ public class npcSprite : MonoBehaviour {
     }
 
     // Removes the npc from the screen
-    public void undraw() {
+    public void undraw()
+    {
         mouth.SetActive(false);
         eyes.SetActive(false);
         for (int i = 0; i < extras.Count; i++)
@@ -135,7 +144,8 @@ public class npcSprite : MonoBehaviour {
     }
 
     // Destroys the sprite
-    public void destroy() {
+    public void destroy()
+    {
         Destroy(mouth);
         Destroy(eyes);
         for (int i = 0; i < pieces.Count; i++)
@@ -145,7 +155,8 @@ public class npcSprite : MonoBehaviour {
     }
 
     // Places the sprite at the given location
-    public void placeAt(Vector3 pos) {
+    public void placeAt(Vector3 pos)
+    {
         transform.position = pos;
         mouth.transform.position = pos;
         eyes.transform.position = pos;
@@ -156,25 +167,30 @@ public class npcSprite : MonoBehaviour {
     }
 
     // Changes the sprite to match a certain state
-    public void setState(string state) {
+    public void setState(string state)
+    {
         // Set sprite mouth to "neutral"
-        if (state.Equals("normal")) {
+        if (state.Equals("normal"))
+        {
             Destroy(mouth);
             int mouthType = (spriteType * _typesMouths) + _neutral;
             mouth = Instantiate(_mouth[mouthType]) as GameObject;
         }
         // Set sprite mouth to "happy"
-        else if (state.Equals("happy")) {
+        else if (state.Equals("happy"))
+        {
             Destroy(mouth);
             int mouthType = (spriteType * _typesMouths) + _smile;
             mouth = Instantiate(_mouth[mouthType]) as GameObject;
         }
         // Set sprite mouth to "frown"
-        else if (state.Equals("sad") || state.Equals("angry")) {
+        else if (state.Equals("sad") || state.Equals("angry"))
+        {
 
         }
         // Set sprite state to "psychotic"
-        else if (state.Equals("psychotic")) {
+        else if (state.Equals("psychotic"))
+        {
             // red eyes
             eyes.GetComponent<SpriteRenderer>().color = new Color(1f, 0f, 0f);
             // smile
