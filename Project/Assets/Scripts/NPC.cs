@@ -22,7 +22,8 @@ public class NPC : MovingObject
     public Boolean hasQuest = false;
     public Boolean atWork = false;
     public Boolean atHome = false;
-
+    public Jobs.Job job;
+    public Dictionary<Items.Item, int> inventory = new Dictionary<Items.Item, int>(); 
     // Places this npc goes
     public Building home, work;
     public Vector3 homeTile, workTile;
@@ -48,7 +49,27 @@ public class NPC : MovingObject
         time = Time.time;
         timeloc = time;
         currentTime = timeOfDay.morning;
+        fillInventoy();
         base.Start();
+    }
+
+    private void fillInventoy()
+    {
+        int invSize = Random.Range(job.inventoryMin, job.inventoryMax);
+        for(int i = 0; i < invSize; i ++)
+        {
+            Items.Item item = Jobs.getRandomItem(job);
+            if (inventory.ContainsKey(item))
+            {
+                inventory[item]++;
+            }
+            else
+            {
+                inventory.Add(item, 1);
+            }
+
+        }
+        
     }
 
     // Update is called once per frame

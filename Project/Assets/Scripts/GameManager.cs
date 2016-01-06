@@ -47,6 +47,8 @@ public class GameManager : MonoBehaviour
     // Initializes the game
     void InitGame()
     {
+        Items.Start();
+        Jobs.Start();
         // Create the map
         map = Instantiate(map, new Vector3(5.5f, 5.5f, 0), Quaternion.identity) as GameObject;
         mapManager = map.GetComponent<MapManager>();

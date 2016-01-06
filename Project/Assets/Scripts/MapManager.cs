@@ -240,7 +240,8 @@ public class MapManager : MonoBehaviour
         for (int i = 0; i < npcs.Count; i++)
         {
             NPC character = npcs[i].GetComponent<NPC>();
-            int homeLoc = Random.Range(0, tempBuildings.Count);
+            character.job = Jobs.getRandomJob();
+            int homeLoc = Random.Range(0, tempBuildings.Count); //do something to get a better type of home and work loc need to talk to kayla
             int workLoc = Random.Range(0, tempBuildings.Count);
             Vector3 home = tempBuildings[homeLoc];
             Vector3 work = tempBuildings[workLoc];
