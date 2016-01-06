@@ -27,7 +27,6 @@ public class GameManager : MonoBehaviour
         print(str);
         writer.WriteLine(str);
         writer.Flush();
-
     }
 
     // Use this for initialization

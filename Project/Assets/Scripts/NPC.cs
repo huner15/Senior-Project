@@ -22,8 +22,13 @@ public class NPC : MovingObject
     public Boolean hasQuest = false;
     public Boolean atWork = false;
     public Boolean atHome = false;
+<<<<<<< HEAD
     public Jobs.Job job;
     public Dictionary<Items.Item, int> inventory = new Dictionary<Items.Item, int>(); 
+=======
+    public Boolean asleep = false;
+
+>>>>>>> origin/master
     // Places this npc goes
     public Building home, work;
     public Vector3 homeTile, workTile;
@@ -35,11 +40,8 @@ public class NPC : MovingObject
     private float timeloc;
     private float time;
     private float movementSpeed;
-    int timeOfDayLength = 1; // in minutes
+    int timeOfDayLength = 5; // in minutes; 15 in total
     timeOfDay currentTime;
-
-    // References
-    public Player player;
 
 
 
@@ -75,40 +77,61 @@ public class NPC : MovingObject
     // Update is called once per frame
     public void Update()
     {
+
         // NPC goes to work
         if (currentTime == timeOfDay.morning && Time.time - timeloc > movementSpeed)
         {
-            if (goTowards(workTile))
+            // NPC wakes up
+            asleep = false;
+            atHome = false;
+            timeloc = Time.time;
+
+            // NPC begins walking to work
+            if (!atWork && goTowards(workTile))
             {
                 // enter work
+                atWork = true;
             }
-            timeloc = Time.time;
         }
         // NPC goes home
         if (currentTime == timeOfDay.evening && Time.time - timeloc > movementSpeed)
         {
-            if (goTowards(homeTile))
+            // NPC stops working
+            atWork = false;
+            timeloc = Time.time;
+
+            // NPC begins walking home
+            if (!atHome && goTowards(homeTile))
             {
                 // enter home
+                atHome = true;
             }
-            timeloc = Time.time;
         }
-        // 
+        // NPC goes to sleep
+        if (currentTime == timeOfDay.night)
+        {
+            atWork = false;
+            timeloc = Time.time;
+
+            // NPC begins walking home (if not already there)
+            if (!atHome && goTowards(homeTile))
+            {
+                // enter home and start sleeping
+                atHome = true;
+                asleep = true;
+            }
+        }
+
+        // Change the time of day
         if (Time.time - time > timeOfDayLength * 60)
         {
             time = Time.time;
             if (currentTime == timeOfDay.morning)
-            {
                 currentTime = timeOfDay.evening;
-            }
             else if (currentTime == timeOfDay.evening)
-            {
                 currentTime = timeOfDay.night;
-            }
             else
-            {
                 currentTime = timeOfDay.morning;
-            }
         }
     }
 
@@ -119,6 +142,8 @@ public class NPC : MovingObject
         this.homeTile = homeTile;
         this.workTile = workTile;
         this.ID = ID;
+        home.owners.Add(this);
+        work.owners.Add(this);
 
         // Create a random sprite and initialize it
         sprite = GetComponent<npcSprite>();
@@ -269,6 +294,24 @@ public class NPC : MovingObject
         personality = personalities[persona];
         sprite.setState(personality);
     }
+
+    // 
+    private void startWorking()
+    {
+
+    }
+
+    private void stopWorking()
+    {
+
+    }
+
+    private void startSleeping()
+    {
+
+    }
+
+    
 
     // NPC starts walking towards the given location
     private bool goTowards(Vector3 tile)
