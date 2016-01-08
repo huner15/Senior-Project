@@ -244,14 +244,7 @@ public class MapManager : MonoBehaviour
         {
             // Choose a random house and workplace
             NPC character = npcs[i].GetComponent<NPC>();
-<<<<<<< HEAD
             character.job = Jobs.getRandomJob();
-            int homeLoc = Random.Range(0, tempBuildings.Count); //do something to get a better type of home and work loc need to talk to kayla
-            int workLoc = Random.Range(0, tempBuildings.Count);
-            Vector3 home = tempBuildings[homeLoc];
-            Vector3 work = tempBuildings[workLoc];
-            character.init(home, work, i);
-=======
             int homeLoc = Random.Range(0, homeLocs.Count);
             int workLoc = Random.Range(0, workLocs.Count);
             Vector3 home = homeLocs[homeLoc];
@@ -270,7 +263,6 @@ public class MapManager : MonoBehaviour
             // Initialize the NPC
             character.home = homeBldg;
             character.work = workBldg;
->>>>>>> origin/master
             character.map = this;
             character.init(home, work, i);
         }

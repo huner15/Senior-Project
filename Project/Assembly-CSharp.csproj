@@ -47,6 +47,8 @@
   <ItemGroup>
      <Compile Include="Assets\Scripts\Building.cs" />
      <Compile Include="Assets\Scripts\GameManager.cs" />
+     <Compile Include="Assets\Scripts\Items.cs" />
+     <Compile Include="Assets\Scripts\Jobs.cs" />
      <Compile Include="Assets\Scripts\Loader.cs" />
      <Compile Include="Assets\Scripts\MapManager.cs" />
      <Compile Include="Assets\Scripts\MovingObject.cs" />
