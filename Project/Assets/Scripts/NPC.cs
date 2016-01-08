@@ -22,12 +22,10 @@ public class NPC : MovingObject
     public Boolean hasQuest = false;
     public Boolean atWork = false;
     public Boolean atHome = false;
-
     public Jobs.Job job;
     public Dictionary<Items.Item, int> inventory = new Dictionary<Items.Item, int>(); 
 
     public Boolean asleep = false;
-
 
     // Places this npc goes
     public Building home, work;
@@ -69,9 +67,7 @@ public class NPC : MovingObject
             {
                 inventory.Add(item, 1);
             }
-
         }
-        
     }
 
     // Update is called once per frame

@@ -265,7 +265,6 @@ public class MapManager : MonoBehaviour
             // Initialize the NPC
             character.home = homeBldg;
             character.work = workBldg;
-
             character.map = this;
             character.init(home, work, i);
         }
