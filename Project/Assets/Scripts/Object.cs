@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Object : MonoBehaviour {
-
+public class Object : MonoBehaviour
+{
+    public Textbox textbox;         // Used for displaying text to screen
     public int mapX, mapY;          // object's location on the map
     public int tileX, tileY;        // object's location on the tile
 
     // Places the object at the given map location
-    public void PlaceAt(int mX, int mY, int tX, int tY, int tZ) {
+    public void PlaceAt(int mX, int mY, int tX, int tY, int tZ)
+    {
         mapX = mX;
         mapY = mY;
         tileX = tX;

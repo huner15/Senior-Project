@@ -13,7 +13,6 @@ public abstract class MovingObject : Object
     private float inverseMoveTime;          //Used to make movement more efficient.
 
 
-
     // Sets up the initial physics stuff
     protected virtual void Start()
     {

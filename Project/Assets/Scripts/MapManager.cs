@@ -20,6 +20,7 @@ public class MapManager : MonoBehaviour
 
     // Outside references
     public Player player;
+    public Textbox textbox;
 
     // Prefab objects
     public GameObject[] caveOutOuterWall, forestOuterWall, townOuterWall, marketOuterWall, farmOuterWall;
@@ -46,7 +47,10 @@ public class MapManager : MonoBehaviour
         {
             for (int y = 0; y < rows; y++)
             {
-                map[x][y].ClearNpcs();
+                if (map != null && map[x] != null)
+                {
+                    map[x][y].ClearNpcs();
+                }
             }
         }
 
@@ -55,6 +59,7 @@ public class MapManager : MonoBehaviour
         {
             // Update the NPC
             NPC character = npcs[i].GetComponent<NPC>();
+            character.tile = map[character.mapX][character.mapY];
             character.Update();
 
             // Update map locations
@@ -64,10 +69,22 @@ public class MapManager : MonoBehaviour
             // Update tile locations
             map[character.mapX][character.mapY].npcs.Add(npcs[i]);
             map[character.mapX][character.mapY].npcLocations.Add(newLoc);
+
+            // Check for interactions
+            if (character.talking == true)
+            {
+                // Character is greeting someone
+                if (character.interactionType == 1)
+                {
+                    character.greet(character.mapX == player.mapX && character.mapY == player.mapY);
+                }
+                character.talking = false;
+            }
         }
 
         // Redraw the map tile
-        map[player.mapX][player.mapY].Draw();
+        if (map != null && player != null && map[player.mapX] != null)
+            map[player.mapX][player.mapY].Draw();
     }
 
     // Sets up the map
@@ -151,7 +168,7 @@ public class MapManager : MonoBehaviour
     }
 
     // Gives an NPC a quest
-    void GiveQuest()
+    private void GiveQuest()
     {
         int objectType = Random.Range(0, 2);
 
@@ -264,6 +281,7 @@ public class MapManager : MonoBehaviour
             character.home = homeBldg;
             character.work = workBldg;
             character.map = this;
+            character.textbox = textbox;
             character.init(home, work, i);
         }
         for (int x = 0; x < Random.Range(5, 10); x++)
@@ -285,6 +303,7 @@ public class MapManager : MonoBehaviour
                     Vector3 loc = map[x][y].buildingLocations[i];
                     Building building = map[x][y].buildings[i].GetComponent<Building>();
                     building.map = this;
+                    building.textbox = textbox;
 
                     // Market place; buildings are stalls
                     if (map[x][y].tileType == "Market")

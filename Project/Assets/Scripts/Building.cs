@@ -76,7 +76,7 @@ public static class Goods
     }
 }
 
-public class Building : MonoBehaviour
+public class Building : Object
 {
     // Building information
     public string name;             // The name of the building

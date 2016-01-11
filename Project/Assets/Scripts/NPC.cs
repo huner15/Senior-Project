@@ -24,13 +24,16 @@ public class NPC : MovingObject
     public Boolean atHome = false;
     public Boolean asleep = false;
     public Jobs.Job job;
-    public Dictionary<Items.Item, int> inventory = new Dictionary<Items.Item, int>(); 
+    public Dictionary<Items.Item, int> inventory = new Dictionary<Items.Item, int>();
+
+    // NPC this npc is talking to
+    public Boolean talking = false;
+    public int interactionType;    // greeting = 1
+    private NPC interactingWith;
 
     // Places this npc goes
     public Building home, work;
     public Vector3 homeTile, workTile;
-    int workTimeStart, workTimeEnd;
-    int sleepTimeStart, sleepTimeEnd;
 
     // Movement stuff
     int ID; // npc's id on the map
@@ -39,6 +42,7 @@ public class NPC : MovingObject
     private float movementSpeed;
     int timeOfDayLength = 5; // in minutes; 15 in total
     timeOfDay currentTime;
+    public TileManager tile;
 
 
 
@@ -52,82 +56,14 @@ public class NPC : MovingObject
         base.Start();
     }
 
-    private void fillInventoy()
-    {
-        int invSize = Random.Range(job.inventoryMin, job.inventoryMax);
-        for(int i = 0; i < invSize; i ++)
-        {
-            Items.Item item = Jobs.getRandomItem(job);
-            if (inventory.ContainsKey(item))
-            {
-                inventory[item]++;
-            }
-            else
-            {
-                inventory.Add(item, 1);
-            }
-        }
-    }
-
     // Update is called once per frame
     public void Update()
     {
-
-        // NPC goes to work
-        if (currentTime == timeOfDay.morning && Time.time - timeloc > movementSpeed)
-        {
-            // NPC wakes up
-            asleep = false;
-            atHome = false;
-            timeloc = Time.time;
-
-            // NPC begins walking to work
-            if (!atWork && goTowards(workTile))
-            {
-                // enter work
-                atWork = true;
-            }
-        }
-        // NPC goes home
-        if (currentTime == timeOfDay.evening && Time.time - timeloc > movementSpeed)
-        {
-            // NPC stops working
-            atWork = false;
-            timeloc = Time.time;
-
-            // NPC begins walking home
-            if (!atHome && goTowards(homeTile))
-            {
-                // enter home
-                atHome = true;
-            }
-        }
-        // NPC goes to sleep
-        if (currentTime == timeOfDay.night)
-        {
-            atWork = false;
-            timeloc = Time.time;
-
-            // NPC begins walking home (if not already there)
-            if (!atHome && goTowards(homeTile))
-            {
-                // enter home and start sleeping
-                atHome = true;
-                asleep = true;
-            }
-        }
-
-        // Change the time of day
-        if (Time.time - time > timeOfDayLength * 60)
-        {
-            time = Time.time;
-            if (currentTime == timeOfDay.morning)
-                currentTime = timeOfDay.evening;
-            else if (currentTime == timeOfDay.evening)
-                currentTime = timeOfDay.night;
-            else
-                currentTime = timeOfDay.morning;
-        }
+        //if (!talking)
+        //{
+            checkArea();  // check for interactions
+            timeStep();   // walking
+        //}
     }
 
     // Create the initial NPC
@@ -212,6 +148,49 @@ public class NPC : MovingObject
         }
     }
 
+    // NPC is greeting someone
+    public void greet(Boolean display)
+    {
+        if (personality == "outgoing")
+        {
+            //if (display)
+                textbox.Write("Hello there! How are you?", sprite);
+        }
+        else if (personality == "psychotic")
+        {
+            //if (display)
+                textbox.Write("*screeches*", sprite);
+        }
+        else if (personality == "shy")
+        {
+            //if (display)
+                textbox.Write("Eek!", sprite);
+            // 20% chance to become sad
+            if (Random.Range(0, 5) == 0)
+            {
+                RemoveState("normal");
+                RemoveState("happy");
+                states.Add("sad");
+                sprite.setState("sad");
+            }
+        }
+        else if (personality == "aggerssive")
+        {
+            //if (display)
+                textbox.Write("What do you want?", sprite);
+        }
+        else if (personality == "lazy")
+        {
+            //if (display)
+                textbox.Write("hi", sprite);
+        }
+        else
+        {
+            //if (display)
+                textbox.Write("Hello there!", sprite);
+        }
+    }
+
 
 
     // Called when the object cannot move
@@ -290,23 +269,22 @@ public class NPC : MovingObject
         sprite.setState(personality);
     }
 
-    // 
-    private void startWorking()
+    private void fillInventoy()
     {
-
+        int invSize = Random.Range(job.inventoryMin, job.inventoryMax);
+        for (int i = 0; i < invSize; i++)
+        {
+            Items.Item item = Jobs.getRandomItem(job);
+            if (inventory.ContainsKey(item))
+            {
+                inventory[item]++;
+            }
+            else
+            {
+                inventory.Add(item, 1);
+            }
+        }
     }
-
-    private void stopWorking()
-    {
-
-    }
-
-    private void startSleeping()
-    {
-
-    }
-
-    
 
     // NPC starts walking towards the given location
     private bool goTowards(Vector3 tile)
@@ -371,5 +349,120 @@ public class NPC : MovingObject
         }
 
         return reachedDestination;
+    }
+
+    // Timebased checking for what NPC is doing
+    private void timeStep()
+    {
+        // NPC goes to work
+        if (currentTime == timeOfDay.morning && Time.time - timeloc > movementSpeed)
+        {
+            // NPC wakes up
+            asleep = false;
+            atHome = false;
+            timeloc = Time.time;
+
+            // NPC begins walking to work
+            if (!atWork && goTowards(workTile))
+            {
+                // enter work
+                atWork = true;
+            }
+        }
+        // NPC goes home
+        if (currentTime == timeOfDay.evening && Time.time - timeloc > movementSpeed)
+        {
+            // NPC stops working
+            atWork = false;
+            timeloc = Time.time;
+
+            // NPC begins walking home
+            if (!atHome && goTowards(homeTile))
+            {
+                // enter home
+                atHome = true;
+            }
+        }
+        // NPC goes to sleep
+        if (currentTime == timeOfDay.night)
+        {
+            atWork = false;
+            timeloc = Time.time;
+
+            // NPC begins walking home (if not already there)
+            if (!atHome && goTowards(homeTile))
+            {
+                // enter home and start sleeping
+                atHome = true;
+                asleep = true;
+            }
+        }
+        // Change the time of day
+        if (Time.time - time > timeOfDayLength * 60)
+        {
+            time = Time.time;
+            if (currentTime == timeOfDay.morning)
+                currentTime = timeOfDay.evening;
+            else if (currentTime == timeOfDay.evening)
+                currentTime = timeOfDay.night;
+            else
+                currentTime = timeOfDay.morning;
+        }
+    }
+
+    // Sees if it can interact with anyone
+    private void checkArea()
+    {
+        List<GameObject> npcs = tile.npcs;
+
+        // Check for people to interact with
+        for (int i = 0; i < npcs.Count; i++)
+        {
+            NPC npc = npcs[i].GetComponent<NPC>();
+
+            // Check in a 2 square radius
+            if (distance(npc.tileX, npc.tileY, tileX, tileY) <= 2 && tileX != npc.tileX && tileY != npc.tileY)
+            {
+                // Check to make sure we haven't already talked to each other
+                if (interactingWith == npc)
+                    return;
+
+                // Check if this NPC wants to initiate interaction
+                if (personality == "outgoing") // 100% chance
+                {
+                    talking = true;
+                    interactionType = 1;
+                }
+                else if (personality == "shy" && Random.Range(0, 10) == 0) // 10% chance
+                {
+                    talking = true;
+                    interactionType = 1;
+                }
+                else if (Random.Range(0, 2) == 0) // 50% chance
+                {
+                    talking = true;
+                    interactionType = 1;
+                }
+
+                interactingWith = npc;
+                interactingWith.talking = true;
+                interactingWith.interactionType = 1;
+            }
+        }
+    }
+
+    // Distance formula
+    private double distance(int x1, int x2, int y1, int y2)
+    {
+        return Math.Sqrt(Math.Pow(Math.Abs(x1 - x2), 2) + Math.Pow(Math.Abs(y1 - y2), 2));
+    }
+
+    private void RemoveState(string toRemove)
+    {
+        for (int i = 0; i < states.Count; i++)
+        {
+            if (states[i] == toRemove)
+                states.RemoveAt(i);
+        }
     }
 }
