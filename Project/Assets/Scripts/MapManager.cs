@@ -73,11 +73,7 @@ public class MapManager : MonoBehaviour
             // Check for interactions
             if (character.talking == true)
             {
-                // Character is greeting someone
-                if (character.interactionType == 1)
-                {
-                    character.greet(character.mapX == player.mapX && character.mapY == player.mapY);
-                }
+                character.speak(character.mapX == player.mapX && character.mapY == player.mapY);
                 character.talking = false;
             }
         }
@@ -261,7 +257,9 @@ public class MapManager : MonoBehaviour
         {
             // Choose a random house and workplace
             NPC character = npcs[i].GetComponent<NPC>();
-            character.job = Jobs.getRandomJob();
+
+            character.job = Jobs.getRandomJob(); //do something to get a better type of home and work loc need to talk to kayla
+
             int homeLoc = Random.Range(0, homeLocs.Count);
             int workLoc = Random.Range(0, workLocs.Count);
             Vector3 home = homeLocs[homeLoc];

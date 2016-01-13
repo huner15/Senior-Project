@@ -262,7 +262,10 @@ public class npcSprite : MonoBehaviour
             extras.Add(Instantiate(_extra[bloodType]));
         }
 
+        if (zoomOutline.activeSelf)
+            drawZoom();
+        else
+            undrawZoom();
         undraw();
-        undrawZoom();
     }
 }

@@ -8,7 +8,6 @@ public class Player : MovingObject
 {
     // Player stats
     public int money = 0;
-    public List<Item> inventory = new List<Item>();
 
     // Tells player if it is in contact with something
     public bool touchingBuilding;
@@ -41,20 +40,10 @@ public class Player : MovingObject
             // Exit the market place
             if (Input.GetKeyDown(KeyCode.X))
                 building.Exit();
-
             // Player is trying to buy something
             else if (Event.current.type == EventType.KeyDown)
             {
-                int num = Event.current.keyCode - KeyCode.Alpha1 + 1;
 
-                // Make sure the item is a legitimate choice
-                if (num >= 0 && num <= 9)
-                {
-                    if (building.BuyGood(num))
-                        textbox.Write("You bought the " + inventory[inventory.Count - 1].name, null);
-                    else
-                        textbox.Write("You tried to buy something but failed miserably.", null);
-                }
             }
             return;
         }
@@ -94,11 +83,6 @@ public class Player : MovingObject
                     Building building = touching.GetComponent<Building>();
                     building.Enter();
                 }
-                print("Successful Interaction");
-            }
-            else
-            {
-                print("Unsuccessful Interaction");
             }
         }
         // Hide textbox

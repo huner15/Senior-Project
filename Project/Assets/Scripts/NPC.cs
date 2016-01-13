@@ -28,7 +28,7 @@ public class NPC : MovingObject
 
     // NPC this npc is talking to
     public Boolean talking = false;
-    public int interactionType;    // greeting = 1
+    public string interactionType;
     private NPC interactingWith;
 
     // Places this npc goes
@@ -42,7 +42,9 @@ public class NPC : MovingObject
     private float movementSpeed;
     int timeOfDayLength = 5; // in minutes; 15 in total
     timeOfDay currentTime;
-    public TileManager tile;
+
+    // Outside references
+    public TileManager tile;    // tile the npc is on
 
 
 
@@ -59,11 +61,8 @@ public class NPC : MovingObject
     // Update is called once per frame
     public void Update()
     {
-        //if (!talking)
-        //{
-            checkArea();  // check for interactions
-            timeStep();   // walking
-        //}
+        timeStep();       // walking
+        checkGreeting();  // check for interactions
     }
 
     // Create the initial NPC
@@ -148,23 +147,17 @@ public class NPC : MovingObject
         }
     }
 
-    // NPC is greeting someone
-    public void greet(Boolean display)
+    // NPC is saying something
+    public void speak(Boolean display)
     {
-        if (personality == "outgoing")
+        string dialogue = Dialogue.getDialogue(personality, interactionType);
+
+        // Write the text if the player is on the same screen
+        //if (display)
+            textbox.Write(dialogue, sprite);
+
+        if (personality == "shy")
         {
-            //if (display)
-                textbox.Write("Hello there! How are you?", sprite);
-        }
-        else if (personality == "psychotic")
-        {
-            //if (display)
-                textbox.Write("*screeches*", sprite);
-        }
-        else if (personality == "shy")
-        {
-            //if (display)
-                textbox.Write("Eek!", sprite);
             // 20% chance to become sad
             if (Random.Range(0, 5) == 0)
             {
@@ -173,21 +166,6 @@ public class NPC : MovingObject
                 states.Add("sad");
                 sprite.setState("sad");
             }
-        }
-        else if (personality == "aggerssive")
-        {
-            //if (display)
-                textbox.Write("What do you want?", sprite);
-        }
-        else if (personality == "lazy")
-        {
-            //if (display)
-                textbox.Write("hi", sprite);
-        }
-        else
-        {
-            //if (display)
-                textbox.Write("Hello there!", sprite);
         }
     }
 
@@ -276,13 +254,9 @@ public class NPC : MovingObject
         {
             Items.Item item = Jobs.getRandomItem(job);
             if (inventory.ContainsKey(item))
-            {
                 inventory[item]++;
-            }
             else
-            {
                 inventory.Add(item, 1);
-            }
         }
     }
 
@@ -314,9 +288,7 @@ public class NPC : MovingObject
                 MoveToTile(dx / (Math.Abs(dx)), 0);
             }
             else
-            {
                 MoveToTile(0, my / (Math.Abs(my)));
-            }
         }
         // Move left or right to the next map tile
         else if (mx != 0)
@@ -328,25 +300,17 @@ public class NPC : MovingObject
                 MoveToTile(0, dy / (Math.Abs(dy)));
             }
             else
-            {
                 MoveToTile(mx / (Math.Abs(mx)), 0);
-            }
         }
         // Move up or down to the next tile
         else if (ty != 0)
-        {
             MoveToTile(0, ty / (Math.Abs(ty)));
-        }
         // Move left or right to the next tile
         else if (tx != 0)
-        {
             MoveToTile(tx / (Math.Abs(tx)), 0);
-        }
         // Reached the target destination
         else
-        {
             reachedDestination = true;
-        }
 
         return reachedDestination;
     }
@@ -411,9 +375,13 @@ public class NPC : MovingObject
     }
 
     // Sees if it can interact with anyone
-    private void checkArea()
+    private void checkGreeting()
     {
         List<GameObject> npcs = tile.npcs;
+
+        // NPC is already talking to someone else
+        if (talking)
+            return;
 
         // Check for people to interact with
         for (int i = 0; i < npcs.Count; i++)
@@ -431,22 +399,22 @@ public class NPC : MovingObject
                 if (personality == "outgoing") // 100% chance
                 {
                     talking = true;
-                    interactionType = 1;
+                    interactionType = "greeting";
                 }
                 else if (personality == "shy" && Random.Range(0, 10) == 0) // 10% chance
                 {
                     talking = true;
-                    interactionType = 1;
+                    interactionType = "greeting";
                 }
                 else if (Random.Range(0, 2) == 0) // 50% chance
                 {
                     talking = true;
-                    interactionType = 1;
+                    interactionType = "greeting";
                 }
 
                 interactingWith = npc;
                 interactingWith.talking = true;
-                interactingWith.interactionType = 1;
+                interactingWith.interactionType = "greeting_response";
             }
         }
     }
@@ -457,6 +425,7 @@ public class NPC : MovingObject
         return Math.Sqrt(Math.Pow(Math.Abs(x1 - x2), 2) + Math.Pow(Math.Abs(y1 - y2), 2));
     }
 
+    // Removes the given state from the NPC
     private void RemoveState(string toRemove)
     {
         for (int i = 0; i < states.Count; i++)

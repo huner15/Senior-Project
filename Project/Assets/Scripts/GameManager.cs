@@ -53,6 +53,7 @@ public class GameManager : MonoBehaviour
     {
         Items.Start();
         Jobs.Start();
+        Dialogue.Start();
 
         // Draw the textbox
         textbox = Instantiate(textbox, new Vector3(4.5f, 0.5f, 0f), Quaternion.identity) as GameObject;

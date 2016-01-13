@@ -2,15 +2,33 @@
 using System.Collections;
 using System.Collections.Generic;
 
+public class Message
+{
+    public List<string> text;
+    public npcSprite sprite;
+
+    public Message(List<string> t, npcSprite s)
+    {
+        text = t;
+        sprite = s;
+    }
+
+    public Message(string t, npcSprite s)
+    {
+        text = new List<string>();
+        text.Add(t);
+        sprite = s;
+    }
+}
 
 public class Textbox : MonoBehaviour
 {
     public GameObject textbox;      // Sprite for the textbox
     private GameObject container;   // Placeholder for containing the text
     private TextMesh mesh;          // Text on screen
-    private List<string> text;      // Actual text
     private npcSprite sprite;       // Sprite of speaking npc
-    private List<List<string>> queue; // Queue of people talking
+    private List<string> text = new List<string>();    // Actual text
+    private List<Message> queue = new List<Message>(); // Queue of text messages
 
     // Text scrolling stuff
     private float time;             // Time created in seconds
@@ -32,6 +50,13 @@ public class Textbox : MonoBehaviour
             timeLoc = Time.time;
             textScroll++;
         }
+        // Show the next text message if there is one in queue
+        else if (Time.time - timeLoc > textSpeed && queue.Count != 0)
+        {
+            WriteAll(queue[0].text, queue[0].sprite);
+            queue.RemoveAt(0);
+        }
+        // Remove the text
         if (Time.time - timeLoc > 5)
         {
             text.Clear();
@@ -59,7 +84,6 @@ public class Textbox : MonoBehaviour
         mesh.alignment = TextAlignment.Left;
         mesh.color = Color.black;
         mesh.fontSize = 20;
-        text = new List<string>();
 
         // Set up time stuff for scrolling
         time = Time.time;
@@ -76,6 +100,12 @@ public class Textbox : MonoBehaviour
     // Writes the given text to the screen
     public void Write(string t, npcSprite npc)
     {
+        if (Time.time - timeLoc < textSpeed)
+        {
+            queue.Add(new Message(t, npc));
+            return;
+        }
+
         if (sprite != null)
             sprite.undrawZoom();
         if (npc == null)
@@ -96,6 +126,12 @@ public class Textbox : MonoBehaviour
     // Writes the given text strings to the screen
     public void WriteAll(List<string> t, npcSprite npc)
     {
+        if (Time.time - timeLoc < textSpeed)
+        {
+            queue.Add(new Message(t, npc));
+            return;
+        }
+
         if (sprite != null)
             sprite.undrawZoom();
         if (npc == null)
@@ -125,12 +161,16 @@ public class Textbox : MonoBehaviour
         if (renderer.color.a == 0f)
         {
             textbox.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 1f);
+            if (sprite != null)
+                sprite.drawZoom();
             container.SetActive(true);
         }
         // Hide textbox
         else if (renderer.color.a == 0.5f)
         {
             textbox.GetComponent<SpriteRenderer>().color = new Color(1f, 1f, 1f, 0f);
+            if (sprite != null)
+                sprite.undrawZoom();
             container.SetActive(false);
         }
         // Make textbox transparant
