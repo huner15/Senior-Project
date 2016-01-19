@@ -114,17 +114,10 @@ public class NPC : MovingObject
             sprite.placeAt(pos);
     }
 
-    // Instantiate a quest
-    public void initQuest()
+    //So we still know how to init our quests.
+    public override void initQuest()
     {
-        hasQuest = true;
-        quest = Instantiate(quest) as GameObject;
-
-        if (sprite != null)
-        {
-            PlaceAt(mapX, mapY, tileX, tileY, 0);
-            quest.SetActive(false);
-        }
+        base.initQuest();
     }
 
     // Draws the NPC to the screen

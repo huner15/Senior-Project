@@ -141,4 +141,16 @@ public abstract class MovingObject : Object
     //OnCantMove will be overriden by functions in the inheriting classes.
     protected abstract void OnCantMove<T>(T component)
         where T : Component;
+
+    //Because you can't call your parent's parent's methods
+    public override void initQuest()
+    {
+        base.initQuest();
+    }
+
+    //Interactions for moving objects change the title
+    public override void Interact()
+    {
+        print("You interacted with a moving object");
+    }
 }
