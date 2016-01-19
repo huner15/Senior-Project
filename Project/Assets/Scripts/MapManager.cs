@@ -30,10 +30,7 @@ public class MapManager : MonoBehaviour
 
     // Grid information
     private Grid grid;
-    public List<GameObject> workBldgs = new List<GameObject>();     // List of all work buildings on all tiles
-    public List<Vector3> workLocs = new List<Vector3>();            // List of all work locations (xy: x = map, y = tile)
-    public List<GameObject> homeBldgs = new List<GameObject>();     // List of all home buildings on all tiles
-    public List<Vector3> homeLocs = new List<Vector3>();            // List of all home locations (xy: x = map, y = tile)
+    public Dictionary<string, List<Building>> buildings = new Dictionary<string, List<Building>>();
     public List<GameObject> npcs = new List<GameObject>();          // List of all NPCs on all tiles
     public List<Vector3> npcLocs = new List<Vector3>();             // List of all NPC locations
 
@@ -252,35 +249,32 @@ public class MapManager : MonoBehaviour
     // Sets up the NPCs
     private void SetupNPCs()
     {
+
+
         // Give each of the NPCs a home and a workplace
         for (int i = 0; i < npcs.Count; i++)
         {
             // Choose a random house and workplace
             NPC character = npcs[i].GetComponent<NPC>();
-
-            character.job = Jobs.getRandomJob(); //do something to get a better type of home and work loc need to talk to kayla
-
-            int homeLoc = Random.Range(0, homeLocs.Count);
-            int workLoc = Random.Range(0, workLocs.Count);
-            Vector3 home = homeLocs[homeLoc];
-            Vector3 work = workLocs[workLoc];
-            Building homeBldg = homeBldgs[homeLoc].GetComponent<Building>();
-            Building workBldg = workBldgs[workLoc].GetComponent<Building>();
+            character.job = Jobs.getRandomJob();
+            string workType = character.job.work_tag;
+            string homeType = character.job.home_tag;
+            int homeLoc = Random.Range(0, buildings[homeType].Count);
+            int workLoc = Random.Range(0, buildings[workType].Count);
+            Building homeBldg = buildings[homeType][homeLoc];
+            Building workBldg = buildings[workType][workLoc];
 
             // Workplace is already occupied, choose another one
-            while (workBldg.type == "market" && workBldg.owners.Count != 0)
+            while (workBldg.tag.Contains("MARKET") && workBldg.owners.Count != 0)
             {
-                workLoc = Random.Range(0, workLocs.Count);
-                work = workLocs[workLoc];
-                workBldg = workBldgs[workLoc].GetComponent<Building>();
+                workLoc = Random.Range(0, buildings[workType].Count);
+                workBldg = workBldg = buildings[workType][workLoc];
             }
 
             // Initialize the NPC
-            character.home = homeBldg;
-            character.work = workBldg;
             character.map = this;
             character.textbox = textbox;
-            character.init(home, work, i);
+            character.init(homeBldg, workBldg, i);
         }
         for (int x = 0; x < Random.Range(5, 10); x++)
         {
@@ -298,6 +292,7 @@ public class MapManager : MonoBehaviour
                 // Find all the buildings
                 for (int i = 0; i < map[x][y].buildings.Count; i++)
                 {
+                    String type = "";
                     Vector3 loc = map[x][y].buildingLocations[i];
                     Building building = map[x][y].buildings[i].GetComponent<Building>();
                     building.map = this;
@@ -305,32 +300,22 @@ public class MapManager : MonoBehaviour
 
                     // Market place; buildings are stalls
                     if (map[x][y].tileType == "Market")
-                    {
-                        building.SetUp(map[x][y], "market");
-                        workLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
-                        workBldgs.Add(map[x][y].buildings[i]);
-                    }
+                        type = "MARKET";
                     // Town; buildings are homes
                     if (map[x][y].tileType == "Town")
-                    {
-                        building.SetUp(map[x][y], "home");
-                        homeLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
-                        homeBldgs.Add(map[x][y].buildings[i]);
-                    }
+                        type = "RESIDENTIAL";
                     // Caves are workplaces (miners)
                     if (map[x][y].tileType == "Cave")
-                    {
-                        building.SetUp(map[x][y], "cave");
-                        workLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
-                        workBldgs.Add(map[x][y].buildings[i]);
-                    }
+                        type = "CAVE";
                     // Farms are workplaces
                     if (map[x][y].tileType == "Farm")
-                    {
-                        building.SetUp(map[x][y], "barn");
-                        workLocs.Add(new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z));
-                        workBldgs.Add(map[x][y].buildings[i]);
-                    }
+                        type = "FARM";
+
+                    building.SetUp(map[x][y], type);
+                    building.loc = new Vector3(loc.x + 10 * x, loc.y + 10 * y, loc.z);
+                    if (!buildings.ContainsKey(type))
+                        buildings[type] = new List<Building>();
+                    buildings[type].Add(building);
                 }
                 // Find all the NPCs
                 for (int i = 0; i < map[x][y].npcs.Count; i++)

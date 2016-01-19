@@ -9,16 +9,17 @@ public class Building : Object
 {
     // Building information
     public string name;             // The name of the building
-    public string type;             // The type of this building
+    public string tag;              // The type of this building
     public TileManager inside;      // The inside of the building
     public TileManager outside;     // Reference to the tile the building is on
     public List<NPC> owners;        // Reference to the NPCs who live/work here
+    public Vector3 loc;             // x = map, y = tile
 
     // Prefab objects
     public GameObject[] outerWalls, walls, floors, objects;
 
     // Used for if the building is a market
-    public string itemType;     // types of items that are generally sold here
+    public string itemType;         // types of items that are generally sold here
 
     // Outside references
     public Player player;
@@ -30,7 +31,7 @@ public class Building : Object
     public void SetUp(TileManager o, string t)
     {
         outside = o;
-        type = t;
+        tag = t;
         owners = new List<NPC>();
     }
 
@@ -66,7 +67,7 @@ public class Building : Object
     public void Enter()
     {
         // Building can be entered
-        if (type != "market")
+        if (tag != "MARKET")
         {
             player.insideBuilding = true;
             outside.Undraw();
@@ -76,9 +77,6 @@ public class Building : Object
         else
         {
             player.insideMarket = true;
-
-
-
             /*
             print("Choose the # of the item you wish to purchase.");
             print("Press 'x' to exit.");
@@ -94,7 +92,7 @@ public class Building : Object
     // Draws the outside of the building when Player exits
     public void Exit()
     {
-        if (type != "market")
+        if (tag != "MARKET")
         {
             player.insideBuilding = false;
             inside.Undraw();

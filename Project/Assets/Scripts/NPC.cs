@@ -66,11 +66,13 @@ public class NPC : MovingObject
     }
 
     // Create the initial NPC
-    public void init(Vector3 homeTile, Vector3 workTile, int ID)
+    public void init(Building h, Building w, int ID)
     {
         // Decide where the npc works and lives
-        this.homeTile = homeTile;
-        this.workTile = workTile;
+        home = h;
+        work = w;
+        homeTile = home.loc;
+        workTile = work.loc;
         this.ID = ID;
         home.owners.Add(this);
         work.owners.Add(this);

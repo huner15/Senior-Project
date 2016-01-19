@@ -16,4 +16,9 @@ public class Object : MonoBehaviour
         tileY = tY;
         transform.position = new Vector3(tX, tY, tZ);
     }
+
+    public void test()
+    {
+        print("hi");
+    }
 }
