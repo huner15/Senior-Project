@@ -52,8 +52,10 @@ public class npcSprite : MonoBehaviour
     private List<GameObject> extras = new List<GameObject>();       // Defines the extra pieces this NPC is carrying
     private GameObject mouth, eyes;                                 // Defines the dynamic pieces that this NPC is made of
     // Zoomed in image
-    GameObject zoom_mouth, zoom_eyes, zoom_eye_color, zoomHair, zoomHairOutline, zoomSkin, zoomTop, zoomOutline;
+    private GameObject zoom_mouth, zoom_eyes, zoom_eye_color, zoomHair, zoomHairOutline, zoomSkin, zoomTop, zoomOutline;
 
+    // Reference to textbox
+    public Textbox textbox;
 
 
     // Returns a random color
@@ -262,10 +264,8 @@ public class npcSprite : MonoBehaviour
             extras.Add(Instantiate(_extra[bloodType]));
         }
 
-        if (zoomOutline.activeSelf)
-            drawZoom();
-        else
-            undrawZoom();
         undraw();
+        undrawZoom();
+        textbox.RedrawNPC();
     }
 }

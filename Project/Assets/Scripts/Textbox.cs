@@ -62,6 +62,8 @@ public class Textbox : MonoBehaviour
             text.Clear();
             mesh.text = "";
         }
+
+        RedrawNPC();
     }
 
     // Draws the textbox to the screen (initial setup)
@@ -150,6 +152,16 @@ public class Textbox : MonoBehaviour
         // Write out all of the text
         for (int i = 0; i < t.Count; i++)
             mesh.text += t[i] + "\n";
+    }
+
+    // Redraws the NPC zoom in face
+    public void RedrawNPC()
+    {
+        if (sprite != null && mesh.text != "")
+        {
+            sprite.undrawZoom();
+            sprite.drawZoom();
+        }
     }
 
     // Hides or shows the textbox

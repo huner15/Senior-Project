@@ -160,6 +160,9 @@ public class Player : MovingObject
         // Draw the new tile we're on
         map.Undraw(oldX, oldY);
         map.Draw(mapX, mapY);
+
+        // Redraw the textbox so it's on top
+        textbox.RedrawNPC();
     }
 
     protected override void OnCantMove<T>(T component)

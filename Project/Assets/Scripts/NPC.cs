@@ -80,6 +80,7 @@ public class NPC : MovingObject
         // Create a random sprite and initialize it
         sprite = GetComponent<npcSprite>();
         sprite.init();
+        sprite.textbox = textbox;
 
         // Create a random state and personality for the npc
         initState();
